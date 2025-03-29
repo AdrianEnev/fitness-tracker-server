@@ -1,8 +1,9 @@
 import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../../config/firebaseConfig";
 import getWorkouts from "./getWorkouts";
+import { generateRandomColour } from "../../generateRandomColour";
 
-// Tested - works
+// TESTED - everything here works (specifying just in case I forget)
 
 // Sync workouts -> compare user Id firebase workouts to provided asyncstorage workouts and add any missing ones to firebase
 const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
@@ -82,14 +83,5 @@ const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
     }
 
 }
-
-const generateRandomColour = () => {
-
-    const colours = ['[#fd3e54]', '[#3f8aff]', '[#15c48a]', '[#ffca2c]', '[#f053a3]', '[#9263fa]', '[#07c0da]'];
-    const randomIndex = Math.floor(Math.random() * colours.length);
-    return colours[randomIndex];
-    
-};
-
 
 export default syncWorkouts;

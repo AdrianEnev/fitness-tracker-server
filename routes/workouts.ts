@@ -3,6 +3,8 @@ const workoutsRouter = express.Router();
 import { getWorkout } from '../services/web/getWorkout';
 import getWorkouts from '../services/mobile/workouts/getWorkouts';
 import syncWorkouts from '../services/mobile/workouts/syncWorkouts';
+import { deleteWorkouts } from '../services/mobile/workouts/deleteWorkouts';
+import addWorkout from '../services/mobile/workouts/addWorkout';
 
 // Get all workouts (user id)
 workoutsRouter.get('/:userId', async (req, res) => {
@@ -40,13 +42,39 @@ workoutsRouter.put('/:userId', async (req, res) => {
 });
 
 // Create/Add workout (user id)
-workoutsRouter.post('/:userId', (req, res) => {
-    res.json({ message: 'Create workout' });
+workoutsRouter.post('/:userId', async (req, res) => {
+
+    const { 
+        language,
+        exercises,
+        workoutTitle,
+        workoutId,
+        folder
+    } = req.body;
+
+    const userId: string = req.params.userId;
+
+    try {
+        await addWorkout(userId, language, exercises, workoutTitle, workoutId, folder);
+    } catch (error) {
+        console.error('Error deleting workout/s:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
-// Delete workout (user id -> workout id)
-workoutsRouter.delete('/:userId/:workoutId', (req, res) => {
-    res.json({ message: 'Delete workout' });
+// Can be used to delete 1 or more workouts at a time
+workoutsRouter.delete('/:userId', async (req, res) => {
+    
+    const { selectedWorkouts } = req.body;
+    const userId: string = req.params.userId;
+
+    try {
+        await deleteWorkouts(selectedWorkouts, userId);
+    } catch (error) {
+        console.error('Error deleting workout/s:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+
 });
 
 // Retreive single workout (user id -> workout id)
