@@ -98,7 +98,7 @@ const getStatistics = async (userInfoCollectionRef: any) => {
     return null;
 }
 
-// Does not retreive whole workout, just basic stuff to display
+// Does not retreive whole workout/s, just basic stuff to display
 const getWorkouts = async (userDocRef: any) => {
 
     const workoutsCollectionRef = collection(userDocRef, "workouts");
@@ -122,6 +122,7 @@ const getWorkouts = async (userDocRef: any) => {
     return null;
 }
 
+// Does not retreive whole workout/s, just basic stuff to display
 const getSavedWorkouts = async (userDocRef: any) => {
 
     const savedWorkoutsCollectionRef = collection(userDocRef, "saved_workouts");
@@ -165,8 +166,8 @@ const getFriends = async (userInfoCollectionRef: any) => {
     return null;
 }
 
-// Does not retreive whole food day, just basic stuff to display
-export const getFoodDays = async (userDocRef: any) => {
+// Does not retreive whole food day/s, just basic stuff to display
+const getFoodDays = async (userDocRef: any) => {
 
     const foodDaysCollectionRef = collection(userDocRef, "food_days");
     const foodDaysSnapshot = await getDocs(foodDaysCollectionRef);

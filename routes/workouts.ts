@@ -6,7 +6,7 @@ import syncWorkouts from '../services/mobile/workouts/syncWorkouts';
 import { deleteWorkouts } from '../services/mobile/workouts/deleteWorkouts';
 import addWorkout from '../services/mobile/workouts/addWorkout';
 
-// Get all workouts (user id)
+// Gets a snapshot of workout documents. Effective for updates but not for displaying info
 workoutsRouter.get('/:userId', async (req, res) => {
     
     const userId: string = req.params.userId;

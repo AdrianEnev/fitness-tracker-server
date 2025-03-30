@@ -1,7 +1,8 @@
 import { collection, doc, getDocs } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../../config/firebaseConfig";
 
-// Get all workouts of a user
+// Gets a snapshot of workout documents. Effective for updates but not for displaying info
+// Different from getWorkouts() inside getUserInfo.tsx
 const getWorkouts = async (userId: string) => {
 
     // Reference to the user's workouts collection in Firestore
