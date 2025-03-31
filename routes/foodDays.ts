@@ -2,6 +2,8 @@ import express from 'express';
 import getFoodDays from '../services/mobile/food/getFoodDays';
 import getFoodDay from '../services/web/getFoodDay';
 import addFoodItem from '../services/mobile/food/addFoodItem';
+import deleteFoodItem from '../services/mobile/food/deleteFood';
+import updateNutrients from '../services/mobile/food/updateFoodDayNutrients';
 const foodDaysRouter = express.Router();
 
 // Gets a snapshot of food day documents. Effective for updates but not for displaying info
@@ -42,6 +44,7 @@ foodDaysRouter.post('/:userId', async (req, res) => {
 
     try {
         await addFoodItem(itemInfo, formattedDate, userId);
+        res.status(200).json({ message: "Food added successfully!" });
     } catch (error) {
         console.error('Error adding food item:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -60,7 +63,8 @@ foodDaysRouter.put('/:userId/:foodDayDate', async (req, res) => {
     const formattedDate: string = req.params.foodDayDate;
 
     try {
-        await updatedNutrients(updatedNutrients, formattedDate, userId);
+        await updateNutrients(updatedNutrients, formattedDate, userId);
+        res.status(200).json({ message: "Nutrients updated successfully!" });
     } catch (error) {
         console.error('Error updating nutrients:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -68,13 +72,16 @@ foodDaysRouter.put('/:userId/:foodDayDate', async (req, res) => {
 })
 
 // Delete specific food day (user id -> food day id)
-foodDaysRouter.delete('/:userId/:foodDayId', async (req, res) => {
+foodDaysRouter.delete('/:userId/:foodDayDate', async (req, res) => {
+
+    // Food Day Item to delete
+    const { item, updatedNutrients } = req.body
     
     const userId: string = req.params.userId;
-    const foodDayId: string = req.params.foodDayId;
+    const formattedDate: string = req.params.foodDayDate;
 
     try {
-        //await deleteFoodDay(userId, userId);
+        await deleteFoodItem(item, formattedDate, updatedNutrients, userId);
     } catch (error) {
         console.error('Error deleting workout/s:', error);
         res.status(500).json({ error: 'Internal server error' });
