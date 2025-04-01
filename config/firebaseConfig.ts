@@ -1,9 +1,22 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+
 import dotenv from 'dotenv';
+import fs from 'fs';
+import * as admin from "firebase-admin";
 
 dotenv.config();
 
+// Read the Firebase Admin SDK JSON dynamically
+const serviceAccountPath = process.env.BACKEND_FIREBASE_ADMIN_PATH;
+
+if (!serviceAccountPath || !fs.existsSync(serviceAccountPath)) {
+  throw new Error("Firebase Admin SDK JSON file not found! Check BACKEND_FIREBASE_ADMIN_PATH.");
+}
+
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf-8"));
+
+// Firebase Config
 const firebaseConfig = {
     apiKey: process.env.BACKEND_FIREBASE_API_KEY,
     authDomain: process.env.BACKEND_FIREBASE_AUTH_DOMAIN,
@@ -14,8 +27,15 @@ const firebaseConfig = {
     measurementId: process.env.BACKEND_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+// Initialize Firebase App
 const FIREBASE_APP = initializeApp(firebaseConfig);
 const FIRESTORE_DB = getFirestore(FIREBASE_APP);
 
-export { FIREBASE_APP, FIRESTORE_DB };
+// Initialize Firebase Admin
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+
+const FIREBASE_ADMIN = admin;
+
+export { FIREBASE_APP, FIRESTORE_DB, FIREBASE_ADMIN };

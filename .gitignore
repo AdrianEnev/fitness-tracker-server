@@ -7,3 +7,6 @@ build/
 
 # Environment files
 .env
+
+# Firebase admin config and others
+config/*.json

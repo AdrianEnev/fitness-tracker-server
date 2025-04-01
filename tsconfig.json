@@ -7,7 +7,8 @@
       "strict": true,
       "esModuleInterop": true,
       "allowJs": true, // Allow JavaScript files
-      "checkJs": false // Disable type-checking for JavaScript files
+      "checkJs": false, // Disable type-checking for JavaScript files
+      "resolveJsonModule": true, // Allow json files
     },
     "include": ["**/*"], // Include all files in the project
     "exclude": ["node_modules"]

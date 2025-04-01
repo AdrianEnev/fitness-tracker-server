@@ -5,6 +5,7 @@ import workoutsRouter from './routes/workouts';
 import foodDaysRouter from './routes/foodDays';
 import savedWorkoutsRouter from './routes/savedWorkouts';
 import modelsRouter from './routes/models';
+import stripeRouter from './routes/stripe';
 
 const app = express();
 app.use(express.json());
@@ -21,6 +22,7 @@ app.use('/api/users', userRouter);
 app.use('/api/workouts', workoutsRouter);
 app.use('/api/savedWorkouts', savedWorkoutsRouter);
 app.use('/api/foodDays', foodDaysRouter);
+app.use('/api/stripe', stripeRouter);
 
 // AI models
 app.use('/api/models', modelsRouter);
