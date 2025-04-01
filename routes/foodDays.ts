@@ -16,6 +16,8 @@ foodDaysRouter.get('/:userId', async (req, res) => {
 
         if (foodDays) {
             res.json(foodDays);
+        res.status(200).json({ message: "Food day snapshots retreived successfully!" });
+
         } else {
             res.status(404).json({ error: 'Food Days not found' });
         }
@@ -30,7 +32,7 @@ foodDaysRouter.get('/:userId', async (req, res) => {
 // expects uer id
 foodDaysRouter.put('/:userId', async (req, res) => {
 
-    
+    res.json({ message: "test" })
 
 });
 
@@ -82,6 +84,7 @@ foodDaysRouter.delete('/:userId/:foodDayDate', async (req, res) => {
 
     try {
         await deleteFoodItem(item, formattedDate, updatedNutrients, userId);
+        res.status(200).json({ message: "Food day deleted successfully!" });
     } catch (error) {
         console.error('Error deleting workout/s:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -89,6 +92,7 @@ foodDaysRouter.delete('/:userId/:foodDayDate', async (req, res) => {
 
 });
 
+// Gets info about specific food day using date
 foodDaysRouter.get('/:userId/:foodDayDate', async (req, res) => {
 
     const foodDayDate: string = req.params.foodDayDate;
@@ -99,6 +103,7 @@ foodDaysRouter.get('/:userId/:foodDayDate', async (req, res) => {
 
         if (foodDayInfo) {
             res.json(foodDayInfo);
+            res.status(200).json({ message: "Food day info retreived successfully!" });
         } else {
             res.status(404).json({ error: 'Food day not found' });
         }

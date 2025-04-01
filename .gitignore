@@ -8,5 +8,5 @@ build/
 # Environment files
 .env
 
-# Firebase admin config and others
+# Firebase admin config (and others if added in the future)
 config/*.json

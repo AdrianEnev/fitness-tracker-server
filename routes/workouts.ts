@@ -16,6 +16,7 @@ workoutsRouter.get('/:userId', async (req, res) => {
 
         if (workouts) {
             res.json(workouts);
+            res.status(200).json({ message: "Workout snapshots retreived successfully!" });
         } else {
             res.status(404).json({ error: 'Workouts not found' });
         }
@@ -34,6 +35,7 @@ workoutsRouter.put('/:userId', async (req, res) => {
 
     try {
         await syncWorkouts(userId, parsedLocalWorkouts);
+        res.status(200).json({ message: "Workouts synced successfully!" });
     } catch (error) {
         console.error('Error retrieving workouts:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -56,6 +58,7 @@ workoutsRouter.post('/:userId', async (req, res) => {
 
     try {
         await addWorkout(userId, language, exercises, workoutTitle, workoutId, folder);
+        res.status(200).json({ message: "Workout added successfully!" });
     } catch (error) {
         console.error('Error deleting workout/s:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -70,6 +73,7 @@ workoutsRouter.delete('/:userId', async (req, res) => {
 
     try {
         await deleteWorkouts(selectedWorkouts, userId);
+        res.status(200).json({ message: "Workout/s deleted successfully!" });
     } catch (error) {
         console.error('Error deleting workout/s:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -88,6 +92,7 @@ workoutsRouter.get('/:userId/:workoutId', async (req, res) => {
 
         if (workoutInfo) {
             res.json(workoutInfo);
+            res.status(200).json({ message: "Workout retreived successfully!" });
         } else {
             res.status(404).json({ error: 'Workout not found' });
         }

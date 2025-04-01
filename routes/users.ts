@@ -16,11 +16,13 @@ userRouter.put('/matchAccounts', async (req, res) => {
         const missingAccounts = await matchFirebaseAccounts(asyncStorageEmails);
 
         if (missingAccounts) {
-            console.log('Missing accounts found, passing reuslt: ', missingAccounts)
+            //console.log('Missing accounts found, passing reuslt: ', missingAccounts)
             res.json(missingAccounts);
+            res.status(200).json({ message: "Missing accounts found successfully!" });
         } else {
-            console.log('No missing accounts found, passing empty array.')
+            //console.log('No missing accounts found, passing empty array.')
             res.json([])
+            res.status(200).json({ message: "No missing accounts found, returning []!" });
         }
     } catch (error) {
         console.error('Error retrieving user info:', error);
@@ -29,6 +31,7 @@ userRouter.put('/matchAccounts', async (req, res) => {
 
 });
 
+// Gets all kinds of user info (workouts, food, language, etc.)
 userRouter.get('/:userId', async (req, res) => {
 
     const userId: string = req.params.userId;
@@ -38,6 +41,7 @@ userRouter.get('/:userId', async (req, res) => {
 
         if (userInfo) {
             res.json(userInfo);
+            res.status(200).json({ message: "User info retreived successfully!" });
         } else {
             res.status(404).json({ error: 'User not found' });
         }
