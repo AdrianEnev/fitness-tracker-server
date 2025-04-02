@@ -16,7 +16,6 @@ foodDaysRouter.get('/:userId', async (req, res) => {
 
         if (foodDays) {
             res.json(foodDays);
-        res.status(200).json({ message: "Food day snapshots retreived successfully!" });
 
         } else {
             res.status(404).json({ error: 'Food Days not found' });
@@ -103,7 +102,6 @@ foodDaysRouter.get('/:userId/:foodDayDate', async (req, res) => {
 
         if (foodDayInfo) {
             res.json(foodDayInfo);
-            res.status(200).json({ message: "Food day info retreived successfully!" });
         } else {
             res.status(404).json({ error: 'Food day not found' });
         }

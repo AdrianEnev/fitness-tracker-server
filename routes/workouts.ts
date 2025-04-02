@@ -16,12 +16,32 @@ workoutsRouter.get('/:userId', async (req, res) => {
 
         if (workouts) {
             res.json(workouts);
-            res.status(200).json({ message: "Workout snapshots retreived successfully!" });
         } else {
             res.status(404).json({ error: 'Workouts not found' });
         }
     } catch (error) {
         console.error('Error retrieving workouts:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+
+});
+
+// Retreive single workout (user id -> workout id)
+workoutsRouter.get('/:userId/:workoutId', async (req, res) => {
+
+    const workoutId: string = req.params.workoutId;
+    const userId: string = req.params.userId;
+
+    try {
+        const workoutInfo = await getWorkout(workoutId, userId);
+
+        if (workoutInfo) {
+            res.json(workoutInfo);
+        } else {
+            res.status(404).json({ error: 'Workout not found' });
+        }
+    } catch (error) {
+        console.error('Error retrieving workout:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 
@@ -76,28 +96,6 @@ workoutsRouter.delete('/:userId', async (req, res) => {
         res.status(200).json({ message: "Workout/s deleted successfully!" });
     } catch (error) {
         console.error('Error deleting workout/s:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-
-});
-
-// Retreive single workout (user id -> workout id)
-workoutsRouter.get('/:userId/:workoutId', async (req, res) => {
-
-    const workoutId: string = req.params.workoutId;
-    const userId: string = req.params.userId;
-
-    try {
-        const workoutInfo = await getWorkout(workoutId, userId);
-
-        if (workoutInfo) {
-            res.json(workoutInfo);
-            res.status(200).json({ message: "Workout retreived successfully!" });
-        } else {
-            res.status(404).json({ error: 'Workout not found' });
-        }
-    } catch (error) {
-        console.error('Error retrieving workout:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 

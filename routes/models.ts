@@ -17,7 +17,6 @@ modelsRouter.get('/checkUsernameNSFW/:username', async (req, res) => {
     try {
         const isUsernameNSFW = await checkUsernameNSFW(username);
         res.json({ isUsernameNSFW });
-        res.status(200).json({ message: "Username checked successfully!" });
     }catch (error) {
         console.error('Error retrieving user info:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -35,7 +34,6 @@ modelsRouter.get('/checkImageNSFW/:uri', async (req, res) => {
 
         const isImageNSFW = await scanImage(url.toString());
         res.json({ isImageNSFW });
-        res.status(200).json({ message: "Image checked successfully!" });
     } catch (error) {
         res.status(400).json({ error: 'Invalid URL provided' });
     }
@@ -67,7 +65,6 @@ modelsRouter.post('/generateWorkout', async (req, res) => {
 
         if (workoutPlan) {
             res.json(workoutPlan);
-            res.status(200).json({ message: "Workout generated successfully!" });
         } else {
             res.status(500).json({ error: 'Failed to generate workout plan' });
         }
@@ -90,7 +87,6 @@ modelsRouter.get('/searchFood', async (req, res) => {
         // If {result} was passed it would wrap that array of objects all into one big object
         // So result is just passed raw instead of having to call data.result from the frontend
         res.json(result);
-        res.status(200).json({ message: "Food found successfully!" });
     } catch (error) {
         res.status(400).json({ error: 'Invalid URL provided' });
     }

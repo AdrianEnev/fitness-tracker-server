@@ -17,7 +17,6 @@ savedWorkoutsRouter.get('/:userId/:savedWorkoutId', async (req, res) => {
 
         if (savedWorkoutInfo) {
             res.json(savedWorkoutInfo);
-            res.status(200).json({ message: "Saved workout retreived successfully!" });
         } else {
             res.status(404).json({ error: 'Saved workout not found' });
         }

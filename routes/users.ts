@@ -18,11 +18,9 @@ userRouter.put('/matchAccounts', async (req, res) => {
         if (missingAccounts) {
             //console.log('Missing accounts found, passing reuslt: ', missingAccounts)
             res.json(missingAccounts);
-            res.status(200).json({ message: "Missing accounts found successfully!" });
         } else {
             //console.log('No missing accounts found, passing empty array.')
             res.json([])
-            res.status(200).json({ message: "No missing accounts found, returning []!" });
         }
     } catch (error) {
         console.error('Error retrieving user info:', error);
@@ -41,7 +39,6 @@ userRouter.get('/:userId', async (req, res) => {
 
         if (userInfo) {
             res.json(userInfo);
-            res.status(200).json({ message: "User info retreived successfully!" });
         } else {
             res.status(404).json({ error: 'User not found' });
         }

@@ -6,8 +6,11 @@ import foodDaysRouter from './routes/foodDays';
 import savedWorkoutsRouter from './routes/savedWorkouts';
 import modelsRouter from './routes/models';
 import stripeRouter from './routes/stripe';
+import cors from "cors";
+
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 dotenv.config();
 
