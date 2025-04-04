@@ -1,0 +1,9 @@
+export const ErrorCodes = {
+    ERR_NOT_FOUND: "ERR_NOT_FOUND",  // yes
+    ERR_VALID: "ERR_VALID",  // yes
+    ERR_UNAUTHORIZED: "ERR_UNAUTHORIZED", // yes
+    ERR_CONFLICT: "ERR_CONFLICT", // yes
+    ERR_INTERNAL: "ERR_INTERNAL",
+    ERR_BAD_REQUEST: "ERR_BAD_REQUEST",
+    ERR_FORBIDDEN: "ERR_FORBIDDEN" // yes
+} as const;

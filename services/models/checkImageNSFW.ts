@@ -1,5 +1,6 @@
 import { HfInference } from "@huggingface/inference";
 import dotenv from 'dotenv'
+import InternalError from "../../errors/custom_errors/InternalError";
 dotenv.config();
 
 const apiToken = process.env.BACKEND_HUGGINGFACE_API_TOKEN;
@@ -11,18 +12,29 @@ const scanImage = async (uri: any) => {
 
     const blob = await uriToBlob(uri);
 
-    const result = await inference.imageClassification({
-        model: model,
-        data: blob
-    });
+    try {
+        const result = await inference.imageClassification({
+            model: model,
+            data: blob
+        });
+        
+        return result
+    }catch (err) {
+        throw new InternalError('Image classification failed (Could not scan image for NSFW)')
+    }  
     
-    return result
 }
 
 const uriToBlob = async (uri: string): Promise<Blob> => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    return blob;
+    
+    try {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        return blob;
+    }catch (err) {
+        throw new InternalError('Error while converting uri to blob (checkImageNSFW)');
+    }
+    
 };
 
 export default scanImage;

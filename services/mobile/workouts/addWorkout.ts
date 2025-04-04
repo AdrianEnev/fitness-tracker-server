@@ -1,8 +1,7 @@
 import { addDoc, collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { FIRESTORE_DB } from '../../../config/firebaseConfig';
 import { generateRandomColour } from '../../generateRandomColour';
-
-// TESTED - everything here works (specifying just in case I forget)
+import InternalError from '../../../errors/custom_errors/InternalError';
 
 const addWorkout = async (userId: string, language: string, exercises: any, workoutTitle: string, workoutId: any, folder?: any) => {
 
@@ -33,23 +32,33 @@ const addWorkout = async (userId: string, language: string, exercises: any, work
     if (exercises.length === 0) {
 
         // Add rest day workout
-        await setDoc(workoutDocRef, {
-            title: workoutTitle.trim(),
-            created: serverTimestamp(),
-            colour: generateRandomColour(),
-            numberOfExercises: 0,
-            folderId: folder ? folder.id : null
-        });
+        try{
+            await setDoc(workoutDocRef, {
+                title: workoutTitle.trim(),
+                created: serverTimestamp(),
+                colour: generateRandomColour(),
+                numberOfExercises: 0,
+                folderId: folder ? folder.id : null
+            });
+        }catch (err) {
+            throw new InternalError("Failed to add rest day");
+        }
+        
+
     } else {
 
         // Add regular workout
-        await setDoc(workoutDocRef, {
-            title: workoutTitle.trim(),
-            created: serverTimestamp(),
-            colour: generateRandomColour(),
-            numberOfExercises: exercises.length,
-            folderId: folder ? folder.id : null
-        });
+        try{
+            await setDoc(workoutDocRef, {
+                title: workoutTitle.trim(),
+                created: serverTimestamp(),
+                colour: generateRandomColour(),
+                numberOfExercises: exercises.length,
+                folderId: folder ? folder.id : null
+            });
+        }catch (err) {
+            throw new InternalError("Failed to add workout");
+        }
 
         const workoutInfoCollectionRef = collection(workoutDocRef, "info");
 
@@ -76,7 +85,7 @@ const addWorkout = async (userId: string, language: string, exercises: any, work
                 });
             });
         } catch (err) {
-            console.error(err);
+            throw new InternalError("Failed to add exercise/s for workout");
         }
 
     }

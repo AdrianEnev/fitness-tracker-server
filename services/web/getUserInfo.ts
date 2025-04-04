@@ -58,7 +58,6 @@ const getUsername = async (userInfoCollectionRef: any) => {
     const username = await getDoc(usernameDocRef);
 
     if (username.exists()) {
-
         const usernameData = username.data().username;
         return usernameData;
     }

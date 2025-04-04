@@ -1,6 +1,7 @@
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../config/firebaseConfig";
 import type { Workout, Exercise, Set } from '../../config/interfaces';
+import InternalError from "../../errors/custom_errors/InternalError";
 
 export const getSavedWorkout = async (savedWorkoutId: string, currentUserUid: any): Promise<Workout | null> => {
 
@@ -22,25 +23,29 @@ export const getSavedWorkout = async (savedWorkoutId: string, currentUserUid: an
     const exercisesCollectionRef = collection(savedWorkoutDocRef, 'info');
     const exercisesSnapshot = await getDocs(exercisesCollectionRef);
 
-    for (const exerciseDoc of exercisesSnapshot.docs) {
-        const exerciseData = exerciseDoc.data();
-        const sets: Set[] = [];
-
-        const setsCollectionRef = collection(exerciseDoc.ref, 'sets');
-        const setsSnapshot = await getDocs(setsCollectionRef);
-
-        for (const setDoc of setsSnapshot.docs) {
-            sets.push({
-                ...setDoc.data(),
-                id: setDoc.id
-            } as Set);
+    try{
+        for (const exerciseDoc of exercisesSnapshot.docs) {
+            const exerciseData = exerciseDoc.data();
+            const sets: Set[] = [];
+    
+            const setsCollectionRef = collection(exerciseDoc.ref, 'sets');
+            const setsSnapshot = await getDocs(setsCollectionRef);
+    
+            for (const setDoc of setsSnapshot.docs) {
+                sets.push({
+                    ...setDoc.data(),
+                    id: setDoc.id
+                } as Set);
+            }
+    
+            exercises.push({
+                ...exerciseData,
+                sets,
+                id: exerciseDoc.id
+            } as Exercise);
         }
-
-        exercises.push({
-            ...exerciseData,
-            sets,
-            id: exerciseDoc.id
-        } as Exercise);
+    }catch (err) {
+        throw new InternalError('Error handling exercises for saved workout')
     }
 
     return {

@@ -4,6 +4,8 @@ import getFoodDay from '../services/web/getFoodDay';
 import addFoodItem from '../services/mobile/food/addFoodItem';
 import deleteFoodItem from '../services/mobile/food/deleteFood';
 import updateNutrients from '../services/mobile/food/updateFoodDayNutrients';
+import validateUserId from '../services/validateUserId';
+import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
 const foodDaysRouter = express.Router();
 
 // Gets a snapshot of food day documents. Effective for updates but not for displaying info
@@ -11,28 +13,22 @@ foodDaysRouter.get('/:userId', async (req, res) => {
     
     const userId: string = req.params.userId;
 
-    try {
-        const foodDays = await getFoodDays(userId);
+    await validateUserId(userId)
 
-        if (foodDays) {
-            res.json(foodDays);
+    const foodDays = await getFoodDays(userId);
 
-        } else {
-            res.status(404).json({ error: 'Food Days not found' });
-        }
-    } catch (error) {
-        console.error('Error retrieving food days:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    if (!foodDays) {
+        throw new EntityNotFoundError('Food Days not found!');
     }
 
+    res.json(foodDays);
+    
 });
 
 // Sync food days -> compare user Id firebase food days to provided asyncstorage food days and add any missing ones to firebase
 // expects uer id
 foodDaysRouter.put('/:userId', async (req, res) => {
-
     res.json({ message: "test" })
-
 });
 
 // Create/Add food item (food) to specific food day
@@ -42,14 +38,10 @@ foodDaysRouter.post('/:userId', async (req, res) => {
     const { itemInfo, formattedDate } = req.body;
 
     const userId: string = req.params.userId;
+    await validateUserId(userId);
 
-    try {
-        await addFoodItem(itemInfo, formattedDate, userId);
-        res.status(200).json({ message: "Food added successfully!" });
-    } catch (error) {
-        console.error('Error adding food item:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    await addFoodItem(itemInfo, formattedDate, userId);
+    res.status(204);
    
 });
 
@@ -63,13 +55,11 @@ foodDaysRouter.put('/:userId/:foodDayDate', async (req, res) => {
     const userId: string = req.params.userId;
     const formattedDate: string = req.params.foodDayDate;
 
-    try {
-        await updateNutrients(updatedNutrients, formattedDate, userId);
-        res.status(200).json({ message: "Nutrients updated successfully!" });
-    } catch (error) {
-        console.error('Error updating nutrients:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    await validateUserId(userId);
+
+    await updateNutrients(updatedNutrients, formattedDate, userId);
+    res.status(204);
+    
 })
 
 // Delete specific food day (user id -> food day id)
@@ -81,13 +71,10 @@ foodDaysRouter.delete('/:userId/:foodDayDate', async (req, res) => {
     const userId: string = req.params.userId;
     const formattedDate: string = req.params.foodDayDate;
 
-    try {
-        await deleteFoodItem(item, formattedDate, updatedNutrients, userId);
-        res.status(200).json({ message: "Food day deleted successfully!" });
-    } catch (error) {
-        console.error('Error deleting workout/s:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    await validateUserId(userId);
+
+    await deleteFoodItem(item, formattedDate, updatedNutrients, userId);
+    res.status(204);    
 
 });
 
@@ -97,18 +84,15 @@ foodDaysRouter.get('/:userId/:foodDayDate', async (req, res) => {
     const foodDayDate: string = req.params.foodDayDate;
     const userId: string = req.params.userId;
 
-    try {
-        const foodDayInfo = await getFoodDay(foodDayDate, userId);
+    await validateUserId(userId);
 
-        if (foodDayInfo) {
-            res.json(foodDayInfo);
-        } else {
-            res.status(404).json({ error: 'Food day not found' });
-        }
-    } catch (error) {
-        console.error('Error retrieving food day:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    const foodDayInfo = await getFoodDay(foodDayDate, userId);
+
+    if (!foodDayInfo) {
+        throw new EntityNotFoundError('Food day not found!');
     }
+
+    res.json(foodDayInfo);
 
 });
 

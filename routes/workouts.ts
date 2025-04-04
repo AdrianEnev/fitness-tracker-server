@@ -5,24 +5,24 @@ import getWorkouts from '../services/mobile/workouts/getWorkouts';
 import syncWorkouts from '../services/mobile/workouts/syncWorkouts';
 import { deleteWorkouts } from '../services/mobile/workouts/deleteWorkouts';
 import addWorkout from '../services/mobile/workouts/addWorkout';
+import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
+import validateUserId from '../services/validateUserId';
 
 // Gets a snapshot of workout documents. Effective for updates but not for displaying info
-workoutsRouter.get('/:userId', async (req, res) => {
-    
+workoutsRouter.get("/:userId", async (req, res) => {
+
     const userId: string = req.params.userId;
+  
+    // Throws bad request error if ID is invalid
+    await validateUserId(userId);
+    
+    const workouts = await getWorkouts(userId);
 
-    try {
-        const workouts = await getWorkouts(userId);
-
-        if (workouts) {
-            res.json(workouts);
-        } else {
-            res.status(404).json({ error: 'Workouts not found' });
-        }
-    } catch (error) {
-        console.error('Error retrieving workouts:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    if (!workouts) {
+        throw new EntityNotFoundError('Could not retreive workout snapshots');
     }
+  
+    res.json(workouts);
 
 });
 
@@ -32,19 +32,17 @@ workoutsRouter.get('/:userId/:workoutId', async (req, res) => {
     const workoutId: string = req.params.workoutId;
     const userId: string = req.params.userId;
 
-    try {
-        const workoutInfo = await getWorkout(workoutId, userId);
+    // Throws bad request error if ID is invalid
+    await validateUserId(userId);
 
-        if (workoutInfo) {
-            res.json(workoutInfo);
-        } else {
-            res.status(404).json({ error: 'Workout not found' });
-        }
-    } catch (error) {
-        console.error('Error retrieving workout:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    const workoutInfo = await getWorkout(workoutId, userId);
+
+    if (!workoutInfo) {
+        throw new EntityNotFoundError('Could not retreive info about workout');
     }
 
+    res.json(workoutInfo);
+    
 });
 
 // Sync workouts -> compare user Id firebase workouts to provided asyncstorage workouts and add any missing ones to firebase
@@ -53,15 +51,15 @@ workoutsRouter.put('/:userId', async (req, res) => {
     const { parsedLocalWorkouts } = req.body;
     const userId = req.params.userId;
 
-    try {
-        await syncWorkouts(userId, parsedLocalWorkouts);
-        res.status(200).json({ message: "Workouts synced successfully!" });
-    } catch (error) {
-        console.error('Error retrieving workouts:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    // Throws bad request error if ID is invalid
+    await validateUserId(userId);
+
+    await syncWorkouts(userId, parsedLocalWorkouts);
+    res.status(204);
 
 });
+
+// Everything below is not yet updated for the new error handling
 
 // Create/Add workout (user id)
 workoutsRouter.post('/:userId', async (req, res) => {
@@ -76,13 +74,11 @@ workoutsRouter.post('/:userId', async (req, res) => {
 
     const userId: string = req.params.userId;
 
-    try {
-        await addWorkout(userId, language, exercises, workoutTitle, workoutId, folder);
-        res.status(200).json({ message: "Workout added successfully!" });
-    } catch (error) {
-        console.error('Error deleting workout/s:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    await validateUserId(userId);
+
+    await addWorkout(userId, language, exercises, workoutTitle, workoutId, folder);
+    res.status(204);
+    
 });
 
 // Can be used to delete 1 or more workouts at a time
@@ -91,13 +87,10 @@ workoutsRouter.delete('/:userId', async (req, res) => {
     const { selectedWorkouts } = req.body;
     const userId: string = req.params.userId;
 
-    try {
-        await deleteWorkouts(selectedWorkouts, userId);
-        res.status(200).json({ message: "Workout/s deleted successfully!" });
-    } catch (error) {
-        console.error('Error deleting workout/s:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    await validateUserId(userId);
+    
+    await deleteWorkouts(selectedWorkouts, userId);
+    res.status(204);
 
 });
 

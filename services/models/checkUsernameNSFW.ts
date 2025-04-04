@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-
+import InternalError from '../../errors/custom_errors/InternalError';
 dotenv.config();
 
 const apiToken = process.env.BACKEND_HUGGINGFACE_API_TOKEN;
@@ -16,41 +16,47 @@ export const checkUsernameNSFW = async (username: string) => {
     }
 
     // If the username is NOT in the list, proceed with NSFW detection
-    const response = await fetch(
-        "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${apiToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                inputs: username,
-                parameters: {
-                    candidate_labels: ["offensive", "non-offensive"],
+    try {
+        const response = await fetch(
+            "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${apiToken}`,
+                    "Content-Type": "application/json",
                 },
-            }),
+                body: JSON.stringify({
+                    inputs: username,
+                    parameters: {
+                        candidate_labels: ["offensive", "non-offensive"],
+                    },
+                }),
+            }
+        );
+
+        const data = await response.json();
+        //console.log(data);
+
+        if (!data || !data.labels || data.labels.length === 0) {
+            console.error("Unexpected API response format", data);
+            // alert user error if needed
+            return true; // Assume NSFW if API fails
         }
-    );
 
-    const data = await response.json();
-    //console.log(data);
+        //console.log(data.labels[0]);
 
-    if (!data || !data.labels || data.labels.length === 0) {
-        console.error("Unexpected API response format", data);
-        // alert user error if needed
-        return true; // Assume NSFW if API fails
+        if (data.labels[0] === "non-offensive") {
+            console.log("Username is not NSFW, returning false");
+            return false;
+        }
+
+        console.log("Username is NSFW, returning true");
+        return true;
+
+    }catch (err) {
+        throw new InternalError('Error checking if username is NSFW')
     }
-
-    //console.log(data.labels[0]);
-
-    if (data.labels[0] === "non-offensive") {
-        console.log("Username is not NSFW, returning false");
-        return false;
-    }
-
-    console.log("Username is NSFW, returning true");
-    return true;
+    
 };
 
 const isUsernameInList = (username: string) => {

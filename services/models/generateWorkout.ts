@@ -106,38 +106,38 @@ const generateWorkout = async (
     const timeoutId = setTimeout(() => controller.abort(), 120000); 
 
     try {
-    const response = await fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/versions/" + MODEL_VERSION_ID + "/outputs", {
-        ...requestOptions,
-        signal: controller.signal,
-    });
+        const response = await fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/versions/" + MODEL_VERSION_ID + "/outputs", {
+            ...requestOptions,
+            signal: controller.signal,
+        });
 
-    // Retreive text returned from the model
-    const responseText = await response.text();
-    const data = JSON.parse(responseText); 
+        // Retreive text returned from the model
+        const responseText = await response.text();
+        const data = JSON.parse(responseText); 
 
-    if (data.status.code !== 10000) {
-        console.log(data.status);
-        return null;
-    } else {
-        const embeddedJsonString = data.outputs[0].data.text.raw;
-        const cleanedJsonString = embeddedJsonString.replace(/```json|```/g, '').trim();
-        const validJsonString = cleanedJsonString.replace(/ per leg| per set for distance or time/g, '');
-        const jsonStartIndex = validJsonString.indexOf('{');
-        const jsonEndIndex = validJsonString.lastIndexOf('}') + 1;
-        const jsonString = validJsonString.substring(jsonStartIndex, jsonEndIndex);
-        const workoutPlan = JSON.parse(jsonString);
-        return workoutPlan;
-    }
+        if (data.status.code !== 10000) {
+            console.log(data.status);
+            return null;
+        } else {
+            const embeddedJsonString = data.outputs[0].data.text.raw;
+            const cleanedJsonString = embeddedJsonString.replace(/```json|```/g, '').trim();
+            const validJsonString = cleanedJsonString.replace(/ per leg| per set for distance or time/g, '');
+            const jsonStartIndex = validJsonString.indexOf('{');
+            const jsonEndIndex = validJsonString.lastIndexOf('}') + 1;
+            const jsonString = validJsonString.substring(jsonStartIndex, jsonEndIndex);
+            const workoutPlan = JSON.parse(jsonString);
+            return workoutPlan;
+        }
     } catch (error: any) {
         if (error.name === 'AbortError') {
-        console.log('Workout generation timed out');
-        return null;
+            console.log('Workout generation timed out');
+            return null;
         } else {
-        console.log('Error during workout generation:', error);
-        return null; 
+            console.log('Error during workout generation:', error);
+            return null; 
         }
     } finally {
-    clearTimeout(timeoutId); 
+        clearTimeout(timeoutId); 
     }
 };
   

@@ -1,4 +1,5 @@
 import dotenv from 'dotenv'
+import InternalError from '../../errors/custom_errors/InternalError';
 dotenv.config()
 
 const EDAMAM_APP_ID = process.env.BACKEND_EDAMAM_APP_ID;
@@ -25,8 +26,7 @@ const fetchFoodData = async (search: string) => {
         return data.hints;
 
     } catch (error) {
-        console.error('Error fetching food data:', error);
-        throw error; // Rethrow error to handle it outside
+        throw new InternalError(`Error fetching data for searched food (query: ${search})`)
     }
 };
 

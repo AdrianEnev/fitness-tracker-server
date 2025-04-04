@@ -2,6 +2,7 @@
 import express from 'express';
 const stripeRouter = express.Router();
 import dotenv from 'dotenv'
+import InternalError from '../errors/custom_errors/InternalError';
 dotenv.config();
 const stripe = require('stripe')(process.env.BACKEND_STRIPE_SECRET_KEY);
 
@@ -10,9 +11,10 @@ stripeRouter.get('/', (req, res) => {
 });
 
 stripeRouter.post('/create-payment-intent', async (req, res) => {
-    try {
-        const { amount, currency, customerId } = req.body;
 
+    const { amount, currency, customerId } = req.body;
+
+    try {
         const paymentIntent = await stripe.paymentIntents.create({
             amount,
             currency,
@@ -23,28 +25,32 @@ stripeRouter.post('/create-payment-intent', async (req, res) => {
             clientSecret: paymentIntent.client_secret,
         });
     } catch (error: any) {
-        res.status(500).send({ error: error.message });
+        throw new InternalError('Error creating stripe payment intent')
     }
+
 });
 
 stripeRouter.post('/create-ephemeral-key', async (req, res) => {
-    try {
-        const { customerId } = req.body;
 
+    const { customerId } = req.body;
+
+    try {
         const ephemeralKey = await stripe.ephemeralKeys.create(
             { customer: customerId }
         );
 
         res.send(ephemeralKey);
     } catch (error: any) {
-        res.status(500).send({ error: error.message });
+        throw new InternalError('Error creating stripe empheral key')
     }
+
 });
 
 stripeRouter.post('/create-or-retrieve-customer', async (req, res) => {
-    try {
-        const { email } = req.body;
 
+    const { email } = req.body;
+
+    try {
         // Check if the customer already exists
         const customers = await stripe.customers.list({ email });
         let customer;
@@ -58,9 +64,9 @@ stripeRouter.post('/create-or-retrieve-customer', async (req, res) => {
 
         res.send({ customerId: customer.id });
     } catch (error: any) {
-        res.status(500).send({ error: error.message });
+        throw new InternalError(`Error handling customer "${email}"`)
     }
-});
 
+});
 
 export default stripeRouter;

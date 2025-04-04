@@ -2,13 +2,24 @@ import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/fires
 import { FIRESTORE_DB } from "../../../config/firebaseConfig";
 import getWorkouts from "./getWorkouts";
 import { generateRandomColour } from "../../generateRandomColour";
-
-// TESTED - everything here works (specifying just in case I forget)
+import BadRequestError from "../../../errors/custom_errors/BadRequestError";
+import InternalError from "../../../errors/custom_errors/InternalError";
 
 // Sync workouts -> compare user Id firebase workouts to provided asyncstorage workouts and add any missing ones to firebase
 const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
 
     console.log('Checking if workouts sync needed for user', userId)
+
+    // Throw error If parsedLocalWorkouts is not an array or not shaped as expected
+    if (!Array.isArray(parsedLocalWorkouts)) {
+        throw new BadRequestError("Invalid format for local workouts");
+    }
+
+    // Local storage workouts
+    const numLocalWorkouts = parsedLocalWorkouts.length;
+
+    // 0 workouts stored locally -> nothing to sync
+    if (numLocalWorkouts == 0) return;
 
     const usersCollectionRef = collection(FIRESTORE_DB, 'users');
     const userDocRef = doc(usersCollectionRef, userId);
@@ -18,18 +29,13 @@ const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
     const firebaseWorkouts = await getWorkouts(userId);
     const numDatabaseWorkouts = firebaseWorkouts.size;
 
-    // Local storage workouts
-    const numLocalWorkouts = parsedLocalWorkouts.length;
-
     console.log('Firebase workouts: ', numDatabaseWorkouts)
     console.log('AsyncStorage workouts: ', numLocalWorkouts)
-
-    if (numLocalWorkouts == 0) return;
 
     // Add missing workouts to firebase
     if (numLocalWorkouts > numDatabaseWorkouts) {
 
-        console.log('Missing workouts in firebase')
+        console.log('Adding missing workouts to firebase...')
 
         const missingWorkouts = parsedLocalWorkouts.filter((localWorkout: any) => {
             return !firebaseWorkouts.docs.some((doc) => doc.id === localWorkout.id);
@@ -75,7 +81,7 @@ const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
 
                 console.log('Added workout successfuly, id:', workout.id)
             } catch (err) {
-                console.error('Error inside try block:', err);
+                throw new InternalError("Failed to sync workout details");
             }
         });
 

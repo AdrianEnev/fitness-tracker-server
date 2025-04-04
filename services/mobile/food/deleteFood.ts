@@ -1,14 +1,18 @@
 import { collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../../config/firebaseConfig";
 import updateNutrients from "./updateFoodDayNutrients";
-
-// TESTED - everything here works (specifying just in case I forget)
+import ValidationError from "../../../errors/custom_errors/ValidationError";
+import InternalError from "../../../errors/custom_errors/InternalError";
 
 // Deletes specific food item by receiving the date of that item and the item itself
 const deleteFoodItem = async (item: any, formattedDate: any, updatedNutrients: any, userId: string) => {
 
     console.log('Deleting item from date:', formattedDate);
     console.log('Item to delete:', item);
+
+    if (!item || !formattedDate || !updatedNutrients) {
+        throw new ValidationError('Invalid item/formattedDate/updatedNutrients passed to deleteFoodItem');
+    }
 
     const usersCollectionRef = collection(FIRESTORE_DB, 'users');
     const userDocRef = doc(usersCollectionRef, userId);
@@ -18,7 +22,6 @@ const deleteFoodItem = async (item: any, formattedDate: any, updatedNutrients: a
     const foodDayCollectionRef = collection(foodDayDocRef, 'foods');
         
     try {
-
         console.log('Deleting document with id:', item.id);
 
         const foodDocRef = doc(foodDayCollectionRef, item.id);
@@ -30,7 +33,6 @@ const deleteFoodItem = async (item: any, formattedDate: any, updatedNutrients: a
         const matchingDoc = data.docs.find((doc) => doc.id === formattedDate);
 
         if (matchingDoc) {
-            
             try {
                 const data = await getDocs(foodDayCollectionRef);
     
@@ -44,19 +46,18 @@ const deleteFoodItem = async (item: any, formattedDate: any, updatedNutrients: a
         
                     await updateDoc(foodDayDocRef, updatedNutrients);
                     console.log('Updated nutrients');
-                    return
+                    return;
                 }
 
                 updateNutrients(updatedNutrients, formattedDate, userId)
                 console.log('Updated nutrients');
     
             } catch (err) {
-                console.error(err);
+                throw new InternalError('Error recalculating nutrients after deleting food item');
             }
         }
-        
     } catch (err) {
-        console.error(err);
+        throw new InternalError('Error deleting food item!')
     }
 }
 

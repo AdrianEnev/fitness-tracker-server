@@ -1,8 +1,6 @@
 import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { FIRESTORE_DB } from "../../../config/firebaseConfig";
 
-// TESTED - everything here works (specifying just in case I forget)
-
 // Update the nutrients of a specific food day
 // Example -> 03.10.2069 - { calories: 100, protein: 100, carbs: 100, fat: 100 }
 // -> 03.10.2069 - { calories: 200, protein: 200, carbs: 200, fat: 200 }

@@ -2,6 +2,8 @@ import express from 'express';
 const userRouter = express.Router();
 import getUserInfo from '../services/web/getUserInfo';
 import matchFirebaseAccounts from '../services/matchFirebaseAccounts';
+import validateUserId from '../services/validateUserId';
+import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
 
 userRouter.get('/', (req, res) => {
     res.json({ message: 'Users list' });
@@ -12,40 +14,32 @@ userRouter.put('/matchAccounts', async (req, res) => {
 
     const { asyncStorageEmails } = req.body;
 
-    try {
-        const missingAccounts = await matchFirebaseAccounts(asyncStorageEmails);
+    const missingAccounts = await matchFirebaseAccounts(asyncStorageEmails);
 
-        if (missingAccounts) {
-            //console.log('Missing accounts found, passing reuslt: ', missingAccounts)
-            res.json(missingAccounts);
-        } else {
-            //console.log('No missing accounts found, passing empty array.')
-            res.json([])
-        }
-    } catch (error) {
-        console.error('Error retrieving user info:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    if (!missingAccounts) {
+        res.json([])
     }
 
+    res.json(missingAccounts);
+    
 });
 
 // Gets all kinds of user info (workouts, food, language, etc.)
+// Currently only being used for the web app
 userRouter.get('/:userId', async (req, res) => {
 
     const userId: string = req.params.userId;
 
-    try {
-        const userInfo = await getUserInfo(userId);
+    await validateUserId(userId);
 
-        if (userInfo) {
-            res.json(userInfo);
-        } else {
-            res.status(404).json({ error: 'User not found' });
-        }
-    } catch (error) {
-        console.error('Error retrieving user info:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    const userInfo = await getUserInfo(userId);
+
+    if (!userInfo) {
+        throw new EntityNotFoundError('User not found!')
     }
+    
+    res.json(userInfo);
+    
 });
 
 export default userRouter;
