@@ -41,7 +41,7 @@ foodDaysRouter.post('/:userId', async (req, res) => {
     await validateUserId(userId);
 
     await addFoodItem(itemInfo, formattedDate, userId);
-    res.status(204);
+    res.status(204).send();
    
 });
 
@@ -58,7 +58,7 @@ foodDaysRouter.put('/:userId/:foodDayDate', async (req, res) => {
     await validateUserId(userId);
 
     await updateNutrients(updatedNutrients, formattedDate, userId);
-    res.status(204);
+    res.status(204).send();
     
 })
 
@@ -74,7 +74,7 @@ foodDaysRouter.delete('/:userId/:foodDayDate', async (req, res) => {
     await validateUserId(userId);
 
     await deleteFoodItem(item, formattedDate, updatedNutrients, userId);
-    res.status(204);    
+    res.status(204).send();    
 
 });
 

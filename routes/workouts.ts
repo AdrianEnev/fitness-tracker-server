@@ -55,11 +55,9 @@ workoutsRouter.put('/:userId', async (req, res) => {
     await validateUserId(userId);
 
     await syncWorkouts(userId, parsedLocalWorkouts);
-    res.status(204);
+    res.status(204).send();
 
 });
-
-// Everything below is not yet updated for the new error handling
 
 // Create/Add workout (user id)
 workoutsRouter.post('/:userId', async (req, res) => {
@@ -77,7 +75,7 @@ workoutsRouter.post('/:userId', async (req, res) => {
     await validateUserId(userId);
 
     await addWorkout(userId, language, exercises, workoutTitle, workoutId, folder);
-    res.status(204);
+    res.status(204).send();
     
 });
 
@@ -90,7 +88,7 @@ workoutsRouter.delete('/:userId', async (req, res) => {
     await validateUserId(userId);
     
     await deleteWorkouts(selectedWorkouts, userId);
-    res.status(204);
+    res.status(204).send();
 
 });
 

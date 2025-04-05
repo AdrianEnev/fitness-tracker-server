@@ -10,16 +10,14 @@ const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
 
     console.log('Checking if workouts sync needed for user', userId)
 
-    // Throw error If parsedLocalWorkouts is not an array or not shaped as expected
-    if (!Array.isArray(parsedLocalWorkouts)) {
-        throw new BadRequestError("Invalid format for local workouts");
-    }
-
     // Local storage workouts
     const numLocalWorkouts = parsedLocalWorkouts.length;
 
     // 0 workouts stored locally -> nothing to sync
-    if (numLocalWorkouts == 0) return;
+    if (numLocalWorkouts == 0) {
+        console.log('No workouts to sync!')
+        return;
+    }
 
     const usersCollectionRef = collection(FIRESTORE_DB, 'users');
     const userDocRef = doc(usersCollectionRef, userId);
