@@ -1,6 +1,6 @@
 import express from 'express';
 const userRouter = express.Router();
-import getUserInfo from '../services/web/getUserInfo';
+import getUserInfo from '../services/getUserInfo';
 import matchFirebaseAccounts from '../services/matchFirebaseAccounts';
 import validateUserId from '../services/validateUserId';
 import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';

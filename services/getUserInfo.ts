@@ -1,5 +1,6 @@
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
-import { FIRESTORE_DB } from '../../config/firebaseConfig';
+import { collection, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
+import { FIRESTORE_DB } from '../config/firebaseConfig';
+import { getStorage, ref } from 'firebase/storage';
 
 const getUserInfo = async (userId: string) => {
 
@@ -17,6 +18,8 @@ const getUserInfo = async (userId: string) => {
         const statistics = await getStatistics(userInfoCollectionRef);
         const username = await getUsername(userInfoCollectionRef);
         const dailyGoals = await getDailyGoals(userInfoCollectionRef);
+        const dateRegistered = await getDateRegistered(userDocRef);
+        const profilePictureRef = await getProfilePictureRef(userId);
 
         console.log('User info retrieved successfully');
 
@@ -28,7 +31,9 @@ const getUserInfo = async (userId: string) => {
             friends, 
             statistics, 
             username, 
-            dailyGoals 
+            dailyGoals,
+            dateRegistered,
+            profilePictureRef
         };
 
     } catch (error) {
@@ -38,6 +43,45 @@ const getUserInfo = async (userId: string) => {
 }
 
 export default getUserInfo;
+
+const getDateRegistered = async (userDocRef: any) => {
+    
+    const userDocSnapshot = await getDoc(userDocRef);
+
+    if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data() as any;
+        const registrationTimestamp = userData?.registrationDate;
+
+        if (registrationTimestamp instanceof Timestamp) {
+            const formattedDate = formatDateRegistered(registrationTimestamp.toDate())
+
+            return formattedDate;
+        }
+    }
+
+    return null;
+}
+
+const formatDateRegistered = (date: any) => {
+    if (date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+    return null;
+}
+
+const getProfilePictureRef = async (userId: any) => {
+    const storage = getStorage();
+    const profilePictureRef = ref(storage, `users/${userId}/profile_picture`);
+
+    if (!profilePictureRef) {
+        return null;
+    }
+
+    return profilePictureRef;
+}
 
 const getDailyGoals = async (userInfoCollectionRef: any) => {
 
