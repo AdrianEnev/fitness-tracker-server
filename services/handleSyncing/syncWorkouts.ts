@@ -1,17 +1,20 @@
 import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
-import getWorkouts from "./getWorkouts";
-import { generateRandomColour } from "../../generateRandomColour";
-import BadRequestError from "../../../errors/custom_errors/BadRequestError";
-import InternalError from "../../../errors/custom_errors/InternalError";
+import { FIRESTORE_DB } from "../../config/firebaseConfig";
+import getWorkouts from "../mobile/workouts/getWorkouts";
+import { generateRandomColour } from "../generateRandomColour";
+import InternalError from "../../errors/custom_errors/InternalError";
 
 // Sync workouts -> compare user Id firebase workouts to provided asyncstorage workouts and add any missing ones to firebase
-const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
+const syncWorkouts = async (userId: string, localWorkouts: any) => {
 
-    console.log('Checking if workouts sync needed for user', userId)
+    console.log('Sync WORKOUTS?...', userId)
+
+    if (!localWorkouts) {
+        throw new InternalError("No workouts provided to sync!");
+    }
 
     // Local storage workouts
-    const numLocalWorkouts = parsedLocalWorkouts.length;
+    const numLocalWorkouts = localWorkouts.length;
 
     // 0 workouts stored locally -> nothing to sync
     if (numLocalWorkouts == 0) {
@@ -35,7 +38,7 @@ const syncWorkouts = async (userId: string, parsedLocalWorkouts: any) => {
 
         console.log('Adding missing workouts to firebase...')
 
-        const missingWorkouts = parsedLocalWorkouts.filter((localWorkout: any) => {
+        const missingWorkouts = localWorkouts.filter((localWorkout: any) => {
             return !firebaseWorkouts.docs.some((doc) => doc.id === localWorkout.id);
         });
 

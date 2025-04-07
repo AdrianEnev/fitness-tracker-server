@@ -2,7 +2,7 @@ import express from 'express';
 const workoutsRouter = express.Router();
 import { getWorkout } from '../services/web/getWorkout';
 import getWorkouts from '../services/mobile/workouts/getWorkouts';
-import syncWorkouts from '../services/mobile/workouts/syncWorkouts';
+import syncWorkouts from '../services/handleSyncing/syncWorkouts';
 import { deleteWorkouts } from '../services/mobile/workouts/deleteWorkouts';
 import addWorkout from '../services/mobile/workouts/addWorkout';
 import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
@@ -46,7 +46,7 @@ workoutsRouter.get('/:userId/:workoutId', async (req, res) => {
 });
 
 // Sync workouts -> compare user Id firebase workouts to provided asyncstorage workouts and add any missing ones to firebase
-workoutsRouter.put('/:userId', async (req, res) => {
+/*workoutsRouter.put('/:userId', async (req, res) => {
 
     const { parsedLocalWorkouts } = req.body;
     const userId = req.params.userId;
@@ -57,7 +57,7 @@ workoutsRouter.put('/:userId', async (req, res) => {
     await syncWorkouts(userId, parsedLocalWorkouts);
     res.status(204).send();
 
-});
+});*/
 
 // Create/Add workout (user id)
 workoutsRouter.post('/:userId', async (req, res) => {

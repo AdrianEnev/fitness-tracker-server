@@ -6,6 +6,7 @@ import deleteFoodItem from '../services/mobile/food/deleteFood';
 import updateNutrients from '../services/mobile/food/updateFoodDayNutrients';
 import validateUserId from '../services/validateUserId';
 import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
+import syncFoodDays from '../services/handleSyncing/syncFoodDays';
 const foodDaysRouter = express.Router();
 
 // Gets a snapshot of food day documents. Effective for updates but not for displaying info
@@ -27,9 +28,18 @@ foodDaysRouter.get('/:userId', async (req, res) => {
 
 // Sync food days -> compare user Id firebase food days to provided asyncstorage food days and add any missing ones to firebase
 // expects uer id
-foodDaysRouter.put('/:userId', async (req, res) => {
-    res.json({ message: "test" })
-});
+/*foodDaysRouter.put('/:userId', async (req, res) => {
+   
+    const { parsedFoodDays } = req.body;
+    const userId = req.params.userId;
+
+    // Throws bad request error if ID is invalid
+    await validateUserId(userId);
+
+    await syncFoodDays(userId, parsedFoodDays);
+    res.status(204).send();
+
+});*/
 
 // Create/Add food item (food) to specific food day
 // expects (food day info, formattedDate, user id)
