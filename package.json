@@ -8,6 +8,10 @@
     "start": "node server.ts",
     "dev": "nodemon server.ts"
   },
+  "overrides": {
+    "whatwg-url": "^14.2.0",
+    "tr46": "^5.1.0"
+    },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -19,7 +23,10 @@
     "express": "^5.1.0",
     "firebase": "^11.5.0",
     "firebase-admin": "^13.2.0",
-    "stripe": "^17.7.0"
+    "google-auth-library": "^9.15.1",
+    "stripe": "^17.7.0",
+    "tr46": "^5.1.0",
+    "whatwg-url": "^14.2.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",

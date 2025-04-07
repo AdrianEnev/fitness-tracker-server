@@ -29,6 +29,7 @@ const getFirebaseAccounts = async (nextPageToken?: string, collectedEmails: stri
     }
 };
 
+// Compares asyncstorage to firebase, returns emails that are missing in firebase but exist in asyncstorage
 const matchFirebaseAccounts = async (asyncStorageEmails: string[]): Promise<string[] | null> => {
 
     try {
