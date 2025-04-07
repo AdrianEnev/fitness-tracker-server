@@ -39,7 +39,6 @@ export const checkUsernameNSFW = async (username: string) => {
 
         if (!data || !data.labels || data.labels.length === 0) {
             console.error("Unexpected API response format", data);
-            // alert user error if needed
             return true; // Assume NSFW if API fails
         }
 

@@ -19,7 +19,7 @@ const handleDeleteFriendRequest = async (userToCheck: any, loggedUserId: string)
         console.log(`Step 1 - sucessful (Deleted request to ${userToCheck.username})`);
 
     } catch (err) {
-        console.error(`Step 1 - error -> Error deleting request to ${userToCheck.username}: `, err);
+        throw new InternalError(`Error deleting request to ${userToCheck.username}`);
     }
 
     // delete recieved from other user

@@ -27,7 +27,7 @@ const handleDeclineFriendRequest = async (userToCheck: any, loggedUserId: string
         });
         console.log(`Steps 1 and 2 - successful (Deleted request to and by ${userToCheck.username})`);
     } catch (err) {
-        console.error(`Steps 1 and 2 - error -> Error deleting request to and by ${userToCheck.username}: `, err);
+        throw new InternalError(`Steps 1 and 2 - error -> Error deleting request to and by ${userToCheck.username}: `);
     }
 
 }

@@ -9,6 +9,7 @@ import getSentFriendRequests from '../services/mobile/friends/getSentFriendReque
 import declineFriendRequest from '../services/mobile/friends/declineFriendRequest';
 import acceptFriendRequest from '../services/mobile/friends/acceptFriendRequest';
 import deleteFriendRequest from '../services/mobile/friends/deleteFriendRequest';
+import removeFriend from '../services/mobile/friends/removeFriend';
 const friendsRouter = express.Router();
 
 // Gets all friend requests a user has received
@@ -83,6 +84,21 @@ friendsRouter.put('/:loggedUserId/decline', async (req, res) => {
 
 })
 
+// Removes friend from friends list
+friendsRouter.delete('/:loggedUserId/:userToCheckId', async (req, res) => {
+
+    const loggedUserId: string = req.params.loggedUserId;
+    const userToCheckId: string = req.params.userToCheckId;
+
+    await validateUserId(loggedUserId);
+    await validateUserId(userToCheckId);
+
+    await removeFriend(userToCheckId, loggedUserId);
+    res.status(200).json({ message: 'Friend removed successfully!' });
+
+});
+
+// Unsends already sent friend request
 friendsRouter.delete('/:loggedUserId', async (req, res) => {
     
     const loggedUserId: string = req.params.loggedUserId;
