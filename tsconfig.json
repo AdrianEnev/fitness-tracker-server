@@ -9,6 +9,15 @@
       "allowJs": true, // Allow JavaScript files
       "checkJs": false, // Disable type-checking for JavaScript files
       "resolveJsonModule": true, // Allow json files
+      "baseUrl": ".",
+        "paths": {
+            "@custom_errors/*": ["errors/custom_errors/*"],
+            "@config/*": ["config/*"],
+            "@middleware/*": ["middleware/*"],
+            "@routes/*": ["routes/*"],
+            "@services/*": ["services/*"],
+            "@utils/*": ["utils/*"],
+        }
     },
     "include": ["**/*"], // Include all files in the project
     "exclude": ["node_modules"],

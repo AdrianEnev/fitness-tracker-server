@@ -9,6 +9,8 @@ import syncWorkouts from '../services/handleSyncing/syncWorkouts';
 import syncFoodDays from '../services/handleSyncing/syncFoodDays';
 import syncSavedWorkouts from '../services/handleSyncing/syncSavedWorkouts';
 import syncWorkoutsInFolders from '../services/handleSyncing/syncWorkoutsInFolders';
+import changeLanguage from '../services/changeLanguage';
+import deleteAccount from '@services/mobile/account/deleteAccount';
 
 userRouter.get('/', (req, res) => {
     res.json({ message: 'Users list' });
@@ -28,6 +30,18 @@ userRouter.put('/matchAccounts', async (req, res) => {
     res.json(missingAccounts);
     
 });
+
+userRouter.put('/:userId/language', async (req, res) => {
+
+    const userId: string = req.params.userId;
+    const language = req.query.language as string;
+
+    await validateUserId(userId);
+
+    await changeLanguage(language, userId);
+    res.status(204).send();
+
+})
 
 // Gets all kinds of user info (workouts, food, language, etc.)
 // Currently only being used for the web app
@@ -51,6 +65,8 @@ userRouter.get('/:userId', async (req, res) => {
 // Compares local info on mobile app to firebase info and fixes any missmatches
 userRouter.put('/:userId', async (req, res) => {
 
+    // TODO: add "checkUsernamesMatch" from a seperate function to here
+
     const userId: string = req.params.userId;
 
     await validateUserId(userId);
@@ -69,6 +85,20 @@ userRouter.put('/:userId', async (req, res) => {
     await syncFoodDays(userId, localFoodDays);
     syncNutrients(userId, localNutrients);
     
+    res.status(204).send();
+})
+
+
+// Deletes account assuming no sub-documents or collections exist
+// Used to delete account that has yet not verified email
+userRouter.delete('/:userId', async (req, res) => {
+
+    const userId: string = req.params.userId;
+    const isVerified = req.query.isVerified as string;
+
+    await validateUserId(userId);
+
+    await deleteAccount(userId, Boolean(isVerified));
     res.status(204).send();
 })
 

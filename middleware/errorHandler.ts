@@ -15,14 +15,23 @@ export default function errorHandler(
     }
   
     if (error instanceof CustomError) {
-        res.status(error.statusCode).json({
-            error: {
-                message: error.message,
-                code: error.code,
-            },
+        console.error(`[CustomError] ${error.message}`, {
+          code: error.code,
+          statusCode: error.statusCode,
+          stack: error.stack,
         });
-    return;
+    
+        res.status(error.statusCode).json({
+          error: {
+            message: error.message,
+            code: error.code,
+          },
+        });
+        return;
     }
+
+    // Log full error for internal server errors
+    //console.error("[InternalError]", error instanceof Error ? error.stack : error);
   
     res.status(500).json({
         error: {
