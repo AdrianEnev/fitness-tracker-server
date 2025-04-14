@@ -1,13 +1,11 @@
-import admin from 'firebase-admin';
 import InternalError from '@custom_errors/InternalError';
 import checkUsernameNSFW from '@services/models/checkUsernameNSFW';
-
-const db = admin.firestore();
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const changeUsername = async (username: string, newUsername: string, userId: string) => {
     console.log('Attempting to change username for user', userId);
 
-    const userDocRef = db.collection('users').doc(userId);
+    const userDocRef = FIRESTORE_ADMIN.collection('users').doc(userId);
     const userInfoCollectionRef = userDocRef.collection('user_info');
     const usernameDocRef = userInfoCollectionRef.doc('username');
 
@@ -55,7 +53,7 @@ const changeUsername = async (username: string, newUsername: string, userId: str
 
         let isUsernameTaken = false;
 
-        const usersSnapshot = await db.collection('users').get();
+        const usersSnapshot = await FIRESTORE_ADMIN.collection('users').get();
         for (const userDoc of usersSnapshot.docs) {
             const userInfoCollectionRef = userDoc.ref.collection('user_info');
             const usernameDoc = await userInfoCollectionRef.doc('username').get();
@@ -82,8 +80,8 @@ const changeUsername = async (username: string, newUsername: string, userId: str
 
 const changeUsernameForFriends = async (currentUserID: string, newUsername: string) => {
     try {
-        const usersSnapshot = await db.collection('users').get();
-        const batch = db.batch();
+        const usersSnapshot = await FIRESTORE_ADMIN.collection('users').get();
+        const batch = FIRESTORE_ADMIN.batch();
 
         for (const userDoc of usersSnapshot.docs) {
             const userInfoCollectionRef = userDoc.ref.collection('user_info');

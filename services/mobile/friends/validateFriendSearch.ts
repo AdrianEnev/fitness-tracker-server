@@ -1,75 +1,68 @@
-import { collection, doc, getDoc } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
-import InternalError from "../../../errors/custom_errors/InternalError";
+import InternalError from "@custom_errors/InternalError";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 // searched user is already a friend of logged in user
 const friendAlready = async (userToCheckId: any, loggedUserInfoCollectionRef: any) => {
+    const friendsDocRef = FIRESTORE_ADMIN.doc(`${loggedUserInfoCollectionRef.path}/friends`);
+    const listCollectionRef = FIRESTORE_ADMIN.collection(friendsDocRef.path + '/list');
 
-    const friendsDocRef = doc(loggedUserInfoCollectionRef, 'friends');
-    const listCollectionRef = collection(friendsDocRef, 'list');
+    const friendDocRef = FIRESTORE_ADMIN.doc(`${listCollectionRef.path}/${userToCheckId}`);
+    const friendDoc = await friendDocRef.get();
 
-    const friendDocRef = doc(listCollectionRef, userToCheckId);
-    const friendDoc = await getDoc(friendDocRef);
-
-    if (friendDoc.data()) {
-        return true
+    if (friendDoc.exists) {
+        console.log('User is already a friend!');
+        return true;
     } else {
-        return false
+        return false;
     }
-
-}
+};
 
 const requestPending = async (userToCheckId: any, loggedUserInfoCollectionRef: any, usersCollectionRef: any, loggedUserId: string) => {
-        
-    const loggedUserSentRequestsCollectionRef = collection(loggedUserInfoCollectionRef, 'friendRequests', 'sent');
-    //const loggedUserReceivedRequestsCollectionRef = collection(loggedUserInfoCollectionRef, 'friendRequests', 'received');
+    const loggedUserSentRequestsCollectionRef = FIRESTORE_ADMIN.collection(`${loggedUserInfoCollectionRef.path}/friendRequests/sent`);
 
-    const otherUserDocRef = doc(usersCollectionRef, userToCheckId);
-    const otherUserInfoCollectionRef = collection(otherUserDocRef, 'user_info');
-    const otherUserSentRequestsCollectionRef = collection(otherUserInfoCollectionRef, 'friendRequests', 'sent');
+    const otherUserDocRef = FIRESTORE_ADMIN.doc(`${usersCollectionRef.path}/${userToCheckId}`);
+    const otherUserInfoCollectionRef = FIRESTORE_ADMIN.collection(`${otherUserDocRef.path}/user_info`);
+    const otherUserSentRequestsCollectionRef = FIRESTORE_ADMIN.collection(`${otherUserInfoCollectionRef.path}/friendRequests/sent`);
 
-    // Check if the current user has sent a request to the other user
-    const sentRequestDocRef = doc(loggedUserSentRequestsCollectionRef, userToCheckId);
-    const sentRequestDoc = await getDoc(sentRequestDocRef);
+    const sentRequestDocRef = FIRESTORE_ADMIN.doc(`${loggedUserSentRequestsCollectionRef.path}/${userToCheckId}`);
+    const sentRequestDoc = await sentRequestDocRef.get();
 
-    // Check if the other user has sent a request to the current user
-    const receivedRequestDocRef = doc(otherUserSentRequestsCollectionRef, loggedUserId);
-    const receivedRequestDoc = await getDoc(receivedRequestDocRef);
+    const receivedRequestDocRef = FIRESTORE_ADMIN.doc(`${otherUserSentRequestsCollectionRef.path}/${loggedUserId}`);
+    const receivedRequestDoc = await receivedRequestDocRef.get();
 
-    if (sentRequestDoc.exists() || receivedRequestDoc.exists()) {
-        return true
+    if (sentRequestDoc.exists || receivedRequestDoc.exists) {
+        console.log('Friend request already sent!');
+        return true;
     } else {
-        return false
+        return false;
     }
 };
 
 const userDisabledFriendRequests = async (userToCheckId: any, usersCollectionRef: any) => {
+    const userDocRef = FIRESTORE_ADMIN.doc(`${usersCollectionRef.path}/${userToCheckId}`);
+    const userInfoCollectionRef = FIRESTORE_ADMIN.collection(`${userDocRef.path}/user_info`);
+    const receiveFriendRequestsDocRef = FIRESTORE_ADMIN.doc(`${userInfoCollectionRef.path}/receiveFriendRequests`);
+    const receiveFriendRequestsDoc = await receiveFriendRequestsDocRef.get();
 
-    const userDocRef = doc(usersCollectionRef, userToCheckId);
-    const userInfoCollectionRef = collection(userDocRef, 'user_info');
-    const receiveFriendRequestsDocRef = doc(userInfoCollectionRef, 'receiveFriendRequests');
-    const receiveFriendRequestsDoc = await getDoc(receiveFriendRequestsDocRef);
-
-    if (receiveFriendRequestsDoc.data()) {
+    if (receiveFriendRequestsDoc.exists) {
         const friendRequestsEnabled = receiveFriendRequestsDoc.data()?.receiveFriendRequests;
 
         if (friendRequestsEnabled === false) {
-            return true
+            console.log('User has disabled friend requests!');
+            return true;
         } else {
-            return false
+            return false;
         }
     } else {
-        return false
+        return false;
     }
-    
-}
+};
 
 const validateFriendSearch = async (userToCheckId: any, loggedUserId: any) => {
-
     try {
-        const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-        const loggedUserDocRef = doc(usersCollectionRef, loggedUserId);
-        const loggedUserInfoCollectionRef = collection(loggedUserDocRef, 'user_info');
+        const usersCollectionRef = FIRESTORE_ADMIN.collection('users');
+        const loggedUserDocRef = FIRESTORE_ADMIN.doc(`${usersCollectionRef.path}/${loggedUserId}`);
+        const loggedUserInfoCollectionRef = FIRESTORE_ADMIN.collection(`${loggedUserDocRef.path}/user_info`);
 
         const hasUserDisabledFriendRequests = await userDisabledFriendRequests(userToCheckId, usersCollectionRef);
         const isRequestPending = await requestPending(userToCheckId, loggedUserInfoCollectionRef, usersCollectionRef, loggedUserId);
@@ -77,17 +70,16 @@ const validateFriendSearch = async (userToCheckId: any, loggedUserId: any) => {
 
         // User can receive friend request
         if (!hasUserDisabledFriendRequests && !isRequestPending && !isFriendAlready) {
-            return true
+            console.log('User can receive friend request!');
+            return true;
         }
 
         // At least one of the variables was true, meaning user should not receive request
-        console.log('has user diabled their friend requests?:', hasUserDisabledFriendRequests)
-        console.log('Has logged in user already sent a request to other user?:', isRequestPending)
-        console.log('is the user already a friend?:', isFriendAlready);
-        return false
-    }catch(err) {
+        console.log('User should not receive request!');
+        return false;
+    } catch (err) {
         throw new InternalError('Failed to validate friend search!');
     }
-}
+};
 
 export default validateFriendSearch;

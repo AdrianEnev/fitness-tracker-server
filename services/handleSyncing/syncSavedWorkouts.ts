@@ -1,80 +1,79 @@
-import { addDoc, collection, doc, getDocs, serverTimestamp, setDoc } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../config/firebaseConfig";
-import InternalError from "../../errors/custom_errors/InternalError";
+import admin from "firebase-admin";
+import InternalError from "@custom_errors/InternalError";
+
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const syncSavedWorkouts = async (userId: string, localSavedWorkouts: any) => {
 
-    console.log('Sync SAVED WORKOUTS?...', userId)
+    console.log('Attempting to sync saved workouts for', userId)
 
     if (!localSavedWorkouts) {
         throw new InternalError('No saved workouts to sync!');
     }
 
-    // Reference to the user's collection in Firestore
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, userId);
-    const userSavedWorkoutsCollectionRef = collection(userDocRef, 'saved_workouts');
+    const userDocRef = FIRESTORE_ADMIN.collection('users').doc(userId);
+    const userSavedWorkoutsCollectionRef = userDocRef.collection('saved_workouts');
 
     // Get the user's saved workouts from Firestore
-    const userSavedWorkoutsSnapshot = await getDocs(userSavedWorkoutsCollectionRef);
+    const userSavedWorkoutsSnapshot = await userSavedWorkoutsCollectionRef.get();
     const numDatabaseSavedWorkouts = userSavedWorkoutsSnapshot.size;
 
     const numLocalSavedWorkouts = localSavedWorkouts.length;
 
     if (numLocalSavedWorkouts <= numDatabaseSavedWorkouts) {
         console.log('No saved workouts to sync!');
-        return
+        return;
     }
 
-    // If there are more saved workouts locally than in the database, sync them
+    // Filter out workouts that already exist in Firestore
     const missingSavedWorkouts = localSavedWorkouts.filter((localSavedWorkout: any) => {
         return !userSavedWorkoutsSnapshot.docs.some((doc) => doc.id === localSavedWorkout.id);
     });
 
-    // Add missing workouts to Firestore
-    missingSavedWorkouts.forEach(async (savedWorkout: any) => {
-        const savedWorkoutDocRef = doc(userSavedWorkoutsCollectionRef, savedWorkout.id);
+    for (const savedWorkout of missingSavedWorkouts) {
+        const savedWorkoutDocRef = userSavedWorkoutsCollectionRef.doc(savedWorkout.id);
 
-        await setDoc(savedWorkoutDocRef, {
+        await savedWorkoutDocRef.set({
             title: savedWorkout.title?.trim() || 'Untitled Workout',
-            created: savedWorkout.created || serverTimestamp(),
+            created: savedWorkout.created || admin.firestore.FieldValue.serverTimestamp(),
             duration: savedWorkout.duration || null,
         });
-        const savedWorkoutInfoCollectionRef = collection(savedWorkoutDocRef, "info");
+
+        const savedWorkoutInfoCollectionRef = savedWorkoutDocRef.collection("info");
 
         try {
-            // Add exercises and sets to Firestore
-            savedWorkout.exercises?.forEach((exercise: any) => {
-                exercise.sets?.forEach(async (set: any, index: any) => {
+            for (const exercise of savedWorkout.exercises || []) {
+                for (const [index, set] of (exercise.sets || []).entries()) {
+
                     if (exercise.title === '') {
                         exercise.title = "Exercise " + (exercise.exerciseIndex);
                     }
-                    const exerciseDocRef = doc(savedWorkoutInfoCollectionRef, (exercise.exerciseIndex).toString());
 
-                    await setDoc(exerciseDocRef, {
+                    const exerciseDocRef = savedWorkoutInfoCollectionRef.doc(exercise.exerciseIndex.toString());
+
+                    await exerciseDocRef.set({
                         title: exercise.title.trim(),
                         exerciseIndex: exercise.exerciseIndex,
                         description: exercise.description || "",
                         note: exercise.note || "",
                     });
 
-                    const exerciseSets = collection(exerciseDocRef, "sets");
+                    const exerciseSets = exerciseDocRef.collection("sets");
 
-                    await addDoc(exerciseSets, {
+                    await exerciseSets.add({
                         reps: set.reps,
                         weight: set.weight,
-                        intensity: set.intensity ? set.intensity : null,
-                        setIndex: index + 1
+                        intensity: set.intensity || null,
+                        setIndex: index + 1,
                     });
-                });
-            });
+                }
+            }
         } catch (err) {
             throw new InternalError('Error syncing saved workouts');
         }
-    });
+    }
 
     console.log('Saved workouts synced');
-
 };
 
 export default syncSavedWorkouts;

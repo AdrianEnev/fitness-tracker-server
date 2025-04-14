@@ -1,67 +1,81 @@
-import { doc, collection, runTransaction } from "firebase/firestore";
-import InternalError from "../../../errors/custom_errors/InternalError";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
+import InternalError from "@custom_errors/InternalError";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const handleAcceptFriendRequest = async (userToCheck: any, loggedUserUsername: string, loggedUserId: string) => {
     
     console.log('Attempting to accept friend request...');
 
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, loggedUserId);
-    const userInfoCollectionRef = collection(userDocRef, 'user_info');
-    const friendRequestsDocRef = doc(userInfoCollectionRef, 'friendRequests');
- 
-    // delete sent from logged user - Step 1
-    const sentCollectionRef = collection(friendRequestsDocRef, 'received');
-    const requestDocRef = doc(sentCollectionRef, userToCheck.id);
+    const requestDocRef = FIRESTORE_ADMIN
+        .collection('users')
+        .doc(loggedUserId)
+        .collection('user_info')
+        .doc('friendRequests')
+        .collection('received')
+        .doc(userToCheck.id);
 
-    // delete received from other user
-    const otherUserDocRef = doc(usersCollectionRef, userToCheck.id);
-    const otherUserInfoCollectionRef = collection(otherUserDocRef, 'user_info');
-    const otherUserFriendRequestsDocRef = doc(otherUserInfoCollectionRef, 'friendRequests');
-    const receivedCollectionRef = collection(otherUserFriendRequestsDocRef, 'sent');
-    const receivedDocRef = doc(receivedCollectionRef, loggedUserId)
+    const receivedDocRef = FIRESTORE_ADMIN
+        .collection('users')
+        .doc(userToCheck.id)
+        .collection('user_info')
+        .doc('friendRequests')
+        .collection('sent')
+        .doc(loggedUserId);
 
     try {
-        await runTransaction(FIRESTORE_DB, async (transaction) => {
+        await FIRESTORE_ADMIN.runTransaction(async (transaction) => {
             transaction.delete(requestDocRef);
             transaction.delete(receivedDocRef);
         });
         console.log(`Steps 1 and 2 - successful (Deleted request to and by ${userToCheck.username})`);
     } catch (err) {
-        throw new InternalError(`Steps 1 and 2 - error -> Error deleting request to and by ${userToCheck.username}: `);
+        console.error(err);
+        throw new InternalError(`Steps 1 and 2 - error -> Error deleting request to and by ${userToCheck.username}:`);
     }
 
-    // Add to friends list - Step 2
-    const otherUserFriendsDocRef = doc(otherUserInfoCollectionRef, 'friends');
-    const loggedInUserFriendsDocRef = doc(userInfoCollectionRef, 'friends');
+    const otherUserFriendsDocRef = FIRESTORE_ADMIN
+        .collection('users')
+        .doc(userToCheck.id)
+        .collection('user_info')
+        .doc('friends');
+
+    const loggedInUserFriendsDocRef = FIRESTORE_ADMIN
+        .collection('users')
+        .doc(loggedUserId)
+        .collection('user_info')
+        .doc('friends');
 
     try {
-        await runTransaction(FIRESTORE_DB, async (transaction) => {
+        await FIRESTORE_ADMIN.runTransaction(async (transaction) => {
             const otherUserFriendsDoc = await transaction.get(otherUserFriendsDocRef);
             const loggedInUserFriendsDoc = await transaction.get(loggedInUserFriendsDocRef);
 
-            if (!otherUserFriendsDoc.exists()) {
+            if (!otherUserFriendsDoc.exists) {
                 transaction.set(otherUserFriendsDocRef, {});
             }
-            if (!loggedInUserFriendsDoc.exists()) {
+            if (!loggedInUserFriendsDoc.exists) {
                 transaction.set(loggedInUserFriendsDocRef, {});
             }
 
-            const otherUserFriendsCollectionRef = collection(otherUserFriendsDocRef, 'list');
-            const loggedInUserFriendsCollectionRef = collection(loggedInUserFriendsDocRef, 'list');
+            const otherUserFriendsCollectionRef = otherUserFriendsDocRef.collection('list');
+            const loggedInUserFriendsCollectionRef = loggedInUserFriendsDocRef.collection('list');
 
-            transaction.set(doc(otherUserFriendsCollectionRef, loggedUserId), { username: loggedUserUsername, id: loggedUserId });
-            transaction.set(doc(loggedInUserFriendsCollectionRef, userToCheck.id), { username: userToCheck.username, id: userToCheck.id });
+            transaction.set(
+                otherUserFriendsCollectionRef.doc(loggedUserId),
+                { username: loggedUserUsername, id: loggedUserId }
+            );
+
+            transaction.set(
+                loggedInUserFriendsCollectionRef.doc(userToCheck.id),
+                { username: userToCheck.username, id: userToCheck.id }
+            );
         });
 
         console.log('Step 3 - successful (added friends to both users)');
-
     } catch (err) {
+        console.error(err);
         throw new InternalError('Error accepting friend request!');
     }
-    
-}
+};
 
 const acceptFriendRequest = async (userToCheck: any, loggedUserUsername: string, loggedUserId: string) => {
     try {
@@ -69,6 +83,6 @@ const acceptFriendRequest = async (userToCheck: any, loggedUserUsername: string,
     } catch (error) {
         throw new InternalError('Error accepting friend request!');
     }
-  };
+};
 
-export default acceptFriendRequest
+export default acceptFriendRequest;

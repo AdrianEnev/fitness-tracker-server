@@ -2,7 +2,7 @@
 import express from 'express';
 const stripeRouter = express.Router();
 import dotenv from 'dotenv'
-import InternalError from '../errors/custom_errors/InternalError';
+import InternalError from '@custom_errors/InternalError';
 dotenv.config();
 const stripe = require('stripe')(process.env.BACKEND_STRIPE_SECRET_KEY);
 

@@ -1,28 +1,24 @@
-import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 // Update the nutrients of a specific food day
-// Example -> 03.10.2069 - { calories: 100, protein: 100, carbs: 100, fat: 100 }
-// -> 03.10.2069 - { calories: 200, protein: 200, carbs: 200, fat: 200 }
-// Runs every time a food item is added to a food day
 const updateNutrients = async (updatedNutrients: any, formattedDate: any, userId: string) => {
-
-    console.log('Updating nutrients for day: ', formattedDate)
+    
+    console.log('Updating nutrients for day: ', formattedDate);
     console.log('New nutrients: ', updatedNutrients);
 
-    // Update Firestore
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, userId);
-    const foodDaysCollectionRef = collection(userDocRef, 'food_days');  
-    const foodDayDocRef = doc(foodDaysCollectionRef, formattedDate);
+    const foodDayDocRef = FIRESTORE_ADMIN
+        .collection('users')
+        .doc(userId)
+        .collection('food_days')
+        .doc(formattedDate);
 
-    const docSnapshot = await getDoc(foodDayDocRef);
+    const docSnapshot = await foodDayDocRef.get();
 
-    if (docSnapshot.exists()) {
-        await updateDoc(foodDayDocRef, updatedNutrients);
+    if (docSnapshot.exists) {
+        await foodDayDocRef.update(updatedNutrients);
     } else {
-        await setDoc(foodDayDocRef, updatedNutrients);
+        await foodDayDocRef.set(updatedNutrients);
     }
-}
+};
 
-export default updateNutrients
+export default updateNutrients;

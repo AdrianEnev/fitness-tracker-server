@@ -1,36 +1,37 @@
-import { doc, collection, runTransaction } from "firebase/firestore";
-import InternalError from "../../../errors/custom_errors/InternalError";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
+import InternalError from "@custom_errors/InternalError";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const handleDeclineFriendRequest = async (userToCheck: any, loggedUserId: string) => {
+    console.log(`Declining friend request from ${userToCheck.username}...`);
 
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, loggedUserId);
-    const userInfoCollectionRef = collection(userDocRef, 'user_info');
-    const friendRequestsDocRef = doc(userInfoCollectionRef, 'friendRequests');
+    const requestDocRef = FIRESTORE_ADMIN
+        .collection('users')
+        .doc(loggedUserId)
+        .collection('user_info')
+        .doc('friendRequests')
+        .collection('received')
+        .doc(userToCheck.id);
 
-    // delete sent from logged user
-    const sentCollectionRef = collection(friendRequestsDocRef, 'received');
-    const requestDocRef = doc(sentCollectionRef, userToCheck.id);
-
-    // delete received from other user
-    const otherUserDocRef = doc(usersCollectionRef, userToCheck.id);
-    const otherUserInfoCollectionRef = collection(otherUserDocRef, 'user_info');
-    const otherUserFriendRequestsDocRef = doc(otherUserInfoCollectionRef, 'friendRequests');
-    const receivedCollectionRef = collection(otherUserFriendRequestsDocRef, 'sent');
-    const receivedDocRef = doc(receivedCollectionRef, loggedUserId)
+    const receivedDocRef = FIRESTORE_ADMIN
+        .collection('users')
+        .doc(userToCheck.id)
+        .collection('user_info')
+        .doc('friendRequests')
+        .collection('sent')
+        .doc(loggedUserId);
 
     try {
-        await runTransaction(FIRESTORE_DB, async (transaction) => {
+        await FIRESTORE_ADMIN.runTransaction(async (transaction) => {
             transaction.delete(requestDocRef);
             transaction.delete(receivedDocRef);
         });
-        console.log(`Steps 1 and 2 - successful (Deleted request to and by ${userToCheck.username})`);
-    } catch (err) {
-        throw new InternalError(`Steps 1 and 2 - error -> Error deleting request to and by ${userToCheck.username}: `);
-    }
 
-}
+        console.log(`Successfully declined friend request from ${userToCheck.username}`);
+    } catch (err) {
+        console.error(err);
+        throw new InternalError(`Error declining request to and by ${userToCheck.username}`);
+    }
+};
 
 const declineFriendRequest = async (userToCheck: any, loggedUserId: string) => {
     try {
@@ -40,4 +41,4 @@ const declineFriendRequest = async (userToCheck: any, loggedUserId: string) => {
     }
 };
 
-export default declineFriendRequest
+export default declineFriendRequest;

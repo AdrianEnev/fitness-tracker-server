@@ -1,13 +1,11 @@
-import { collection, doc, getDoc, getDocs, Timestamp } from 'firebase/firestore'
-import { FIRESTORE_DB } from '../config/firebaseConfig';
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
+import { Timestamp } from 'firebase/firestore';
 
 const getUserInfo = async (userId: string) => {
+    const userDocRef = FIRESTORE_ADMIN.collection("users").doc(userId);
+    const userInfoCollectionRef = userDocRef.collection("user_info");
 
-    const usersCollectionRef = collection(FIRESTORE_DB, "users");
-    const userDocRef = doc(usersCollectionRef, userId);
-    const userInfoCollectionRef = collection(userDocRef, "user_info");
-
-    const userDocSnapshot = await getDoc(userDocRef);
+    const userDocSnapshot = await userDocRef.get();
 
     console.log('Retrieving user info...');
     try {
@@ -84,8 +82,8 @@ const formatDateRegistered = (date: any) => {
 
 const getDailyGoals = async (userInfoCollectionRef: any) => {
 
-    const dailyGoalsDocRef = doc(userInfoCollectionRef, "nutrients");
-    const dailyGoals = await getDoc(dailyGoalsDocRef);
+    const dailyGoalsDocRef = userInfoCollectionRef.doc("nutrients");
+    const dailyGoals = await dailyGoalsDocRef.get();
     
     if (dailyGoals.exists()) {
         const dailyGoalsData =  JSON.stringify(dailyGoals.data());
@@ -97,11 +95,11 @@ const getDailyGoals = async (userInfoCollectionRef: any) => {
 
 const getUsername = async (userInfoCollectionRef: any) => {
 
-    const usernameDocRef = doc(userInfoCollectionRef, "username");
-    const username = await getDoc(usernameDocRef);
+    const usernameDocRef = userInfoCollectionRef.doc("username");
+    const username = await usernameDocRef.get();
 
     if (username.exists()) {
-        const usernameData = username.data().username;
+        const usernameData = username.data()?.username;
         return usernameData;
     }
 
@@ -110,11 +108,11 @@ const getUsername = async (userInfoCollectionRef: any) => {
 
 const getLanguage = async (userInfoCollectionRef: any) => {
 
-    const languageDocRef = doc(userInfoCollectionRef, "language");
-    const language = await getDoc(languageDocRef);
+    const languageDocRef = userInfoCollectionRef.doc("language");
+    const language = await languageDocRef.get();
 
     if (language.exists()) {
-        const languageData = language.data().language;
+        const languageData = language.data()?.language;
         return languageData;
     }
 
@@ -123,14 +121,14 @@ const getLanguage = async (userInfoCollectionRef: any) => {
 
 const getStatistics = async (userInfoCollectionRef: any) => {
 
-    const statisticsDocRef = doc(userInfoCollectionRef, "statistics");
-    const statistics = await getDoc(statisticsDocRef);
+    const statisticsDocRef = userInfoCollectionRef.doc("statistics");
+    const statistics = await statisticsDocRef.get();
 
     if (statistics.exists()) {
         const statisticsData = statistics.data();
         const statisticsArray = [
-            { id: 'finishedWorkouts', value: statisticsData.finishedWorkouts },
-            { id: 'weightLifted', value: statisticsData.weightLifted }
+            { id: 'finishedWorkouts', value: statisticsData?.finishedWorkouts },
+            { id: 'weightLifted', value: statisticsData?.weightLifted }
         ];
         
         const statisticsDataFormatted = JSON.stringify(statisticsArray);
@@ -140,15 +138,15 @@ const getStatistics = async (userInfoCollectionRef: any) => {
     return null;
 }
 
-// Does not retreive whole workout/s, just basic stuff to display
+// Does not retrieve whole workout/s, just basic stuff to display
 const getWorkouts = async (userDocRef: any) => {
 
-    const workoutsCollectionRef = collection(userDocRef, "workouts");
-    const workoutsSnapshot = await getDocs(workoutsCollectionRef);
+    const workoutsCollectionRef = userDocRef.collection("workouts");
+    const workoutsSnapshot = await workoutsCollectionRef.get();
 
     if (!workoutsSnapshot.empty) {
         const workoutsData = workoutsSnapshot.docs
-            .map(doc => ({ 
+            .map((doc: { id: any; data: () => { (): any; new(): any; title: any; created: any; colour: any; folderId: any; numberOfExercises: any; }; }) => ({ 
                 id: doc.id, 
                 title: doc.data().title || "Error!", 
                 created: doc.data().created,
@@ -156,7 +154,7 @@ const getWorkouts = async (userDocRef: any) => {
                 folderId: doc.data().folderId || null,
                 numberOfExercises: doc.data().numberOfExercises || 0
             }))
-            .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+            .sort((a: { created: string | number | Date; }, b: { created: string | number | Date; }) => new Date(b.created).getTime() - new Date(a.created).getTime());
 
         return JSON.stringify(workoutsData);
     }
@@ -164,21 +162,21 @@ const getWorkouts = async (userDocRef: any) => {
     return null;
 }
 
-// Does not retreive whole workout/s, just basic stuff to display
+// Does not retrieve whole workout/s, just basic stuff to display
 const getSavedWorkouts = async (userDocRef: any) => {
 
-    const savedWorkoutsCollectionRef = collection(userDocRef, "saved_workouts");
-    const savedWorkoutsSnapshot = await getDocs(savedWorkoutsCollectionRef);
+    const savedWorkoutsCollectionRef = userDocRef.collection("saved_workouts");
+    const savedWorkoutsSnapshot = await savedWorkoutsCollectionRef.get();
 
     if (!savedWorkoutsSnapshot.empty) {
         const savedWorkoutsData = savedWorkoutsSnapshot.docs
-            .map(doc => ({
+            .map((doc: { id: any; data: () => { (): any; new(): any; title: any; created: any; duration: any; }; }) => ({
                 id: doc.id,
                 title: doc.data().title || "Error!",
                 created: doc.data().created,
                 duration: doc.data().duration,
             }))
-            .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+            .sort((a: { created: string | number | Date; }, b: { created: string | number | Date; }) => new Date(b.created).getTime() - new Date(a.created).getTime());
 
         return JSON.stringify(savedWorkoutsData);
     }
@@ -188,17 +186,17 @@ const getSavedWorkouts = async (userDocRef: any) => {
 
 const getFriends = async (userInfoCollectionRef: any) => {
 
-    const friendsDocRef = doc(userInfoCollectionRef, "friends");
-    const friendsListCollectionRef = collection(friendsDocRef, "list");
-    const friendsSnapshot = await getDocs(friendsListCollectionRef);
+    const friendsDocRef = userInfoCollectionRef.doc("friends");
+    const friendsListCollectionRef = friendsDocRef.collection("list");
+    const friendsSnapshot = await friendsListCollectionRef.get();
 
     if (!friendsSnapshot.empty) {
         const friendsData = friendsSnapshot.docs
-            .map(doc => {
+            .map((doc: { data: () => any; id: any; }) => {
                 const data = doc.data();
                 return {
                     id: doc.id,
-                    username: data.username || "Error!",
+                    username: data?.username || "Error!",
                 };
             });
 
@@ -208,30 +206,30 @@ const getFriends = async (userInfoCollectionRef: any) => {
     return null;
 }
 
-// Does not retreive whole food day/s, just basic stuff to display
+// Does not retrieve whole food day/s, just basic stuff to display
 const getFoodDays = async (userDocRef: any) => {
 
-    const foodDaysCollectionRef = collection(userDocRef, "food_days");
-    const foodDaysSnapshot = await getDocs(foodDaysCollectionRef);
+    const foodDaysCollectionRef = userDocRef.collection("food_days");
+    const foodDaysSnapshot = await foodDaysCollectionRef.get();
 
     if (!foodDaysSnapshot.empty) {
         const foodDaysData = foodDaysSnapshot.docs
-            .map(doc => {
+            .map((doc: { data: () => any; id: any; }) => {
                 const data = doc.data() as any;
-                const title = data.title || "Error!";
+                const title = data?.title || "Error!";
                 const created = new Date(title); // Convert title to Date object
 
                 return {
                     id: doc.id,
                     title,
-                    calories: data.calories || "-",
-                    protein: data.protein || "-",
-                    carbs: data.carbs || "-",
-                    fat: data.fat || "-",
+                    calories: data?.calories || "-",
+                    protein: data?.protein || "-",
+                    carbs: data?.carbs || "-",
+                    fat: data?.fat || "-",
                     created
                 };
             })
-            .sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
+            .sort((a: { created: string | number | Date; }, b: { created: string | number | Date; }) => new Date(b.created).getTime() - new Date(a.created).getTime());
 
         return JSON.stringify(foodDaysData);
     }

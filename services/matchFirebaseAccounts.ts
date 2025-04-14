@@ -1,4 +1,4 @@
-import { FIREBASE_ADMIN } from "../config/firebaseConfig";
+import { FIREBASE_ADMIN } from "@config/firebaseConfig";
 
 // Function to list all users and store emails
 const getFirebaseAccounts = async (nextPageToken?: string, collectedEmails: string[] = []): Promise<string[]> => {

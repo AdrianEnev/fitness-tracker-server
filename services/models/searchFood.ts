@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import InternalError from '../../errors/custom_errors/InternalError';
+import InternalError from '@custom_errors/InternalError';
 dotenv.config()
 
 const EDAMAM_APP_ID = process.env.BACKEND_EDAMAM_APP_ID;

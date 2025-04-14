@@ -1,31 +1,35 @@
-import { collection, doc, getDocs } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
-import { Friend } from "../../../config/interfaces";
+import { Friend } from "@config/interfaces";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
-const getFriendsList = async (userId: string) => {
+const getFriendsList = async (userId: string): Promise<Friend[]> => {
+    console.log('Attempting to retrieve friends list');
 
-    console.log('Attempting to retreive friends list');
+    try {
+        const listCollectionRef = FIRESTORE_ADMIN
+            .collection('users')
+            .doc(userId)
+            .collection('user_info')
+            .doc('friends')
+            .collection('list');
 
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, userId);
-    const userInfoCollectionRef = collection(userDocRef, 'user_info');
-    const friendsDocRef = doc(userInfoCollectionRef, 'friends');
-    const listCollectionRef = collection(friendsDocRef, 'list');
-    
-    const querySnapshot = await getDocs(listCollectionRef);
+        const querySnapshot = await listCollectionRef.get();
 
-    // No friends, return empty array
-    if (!querySnapshot) {
-        return [];
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const friendsList: Friend[] = [];
+        querySnapshot.forEach((doc) => {
+            friendsList.push(doc.data() as Friend);
+        });
+
+        console.log('Info retrieved:', friendsList);
+        return friendsList;
+
+    } catch (error) {
+        console.error("Error retrieving friends list:", error);
+        throw new Error("Unable to fetch friends list");
     }
-
-    const friendsList: Friend[] = [];
-    querySnapshot.forEach((doc) => {
-        friendsList.push(doc.data() as Friend);
-    });
-
-    console.log('Info retreived:', friendsList)
-    return friendsList;
-}
+};
 
 export default getFriendsList;

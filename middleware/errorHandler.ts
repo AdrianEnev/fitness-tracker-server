@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { getErrorMessage } from "../utils/getErrorMessage";
-import serverConfig from "../config/serverConfig";
+import { getErrorMessage } from "@utils/getErrorMessage";
+import serverConfig from "@config/serverConfig";
 import CustomError from "../errors/CustomError";
 
 export default function errorHandler(

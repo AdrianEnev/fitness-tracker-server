@@ -1,12 +1,12 @@
 import express from 'express';
 const workoutsRouter = express.Router();
-import { getWorkout } from '../services/web/getWorkout';
-import getWorkouts from '../services/mobile/workouts/getWorkouts';
-import syncWorkouts from '../services/handleSyncing/syncWorkouts';
-import { deleteWorkouts } from '../services/mobile/workouts/deleteWorkouts';
-import addWorkout from '../services/mobile/workouts/addWorkout';
-import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
-import validateUserId from '../services/validateUserId';
+import { getWorkout } from '@services/web/getWorkout';
+import getWorkouts from '@services/mobile/workouts/getWorkouts';
+import syncWorkouts from '@services/handleSyncing/syncWorkouts';
+import { deleteWorkouts } from '@services/mobile/workouts/deleteWorkouts';
+import addWorkout from '@services/mobile/workouts/addWorkout';
+import EntityNotFoundError from '@custom_errors/EntityNotFoundError';
+import validateUserId from '@services/validateUserId';
 
 // Gets a snapshot of workout documents. Effective for updates but not for displaying info
 workoutsRouter.get("/:userId", async (req, res) => {

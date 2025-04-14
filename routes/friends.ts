@@ -1,15 +1,15 @@
 import express, { Request, Response } from 'express';
-import getFriendsList from '../services/mobile/friends/getFriendsList';
-import validateUserId from '../services/validateUserId';
-import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
-import validateFriendSearch from '../services/mobile/friends/validateFriendSearch';
-import getReceivedFriendRequests from '../services/mobile/friends/getRecevedFriendRequests';
-import sendFriendRequest from '../services/mobile/friends/sendFriendRequest';
-import getSentFriendRequests from '../services/mobile/friends/getSentFriendRequests';
-import declineFriendRequest from '../services/mobile/friends/declineFriendRequest';
-import acceptFriendRequest from '../services/mobile/friends/acceptFriendRequest';
-import deleteFriendRequest from '../services/mobile/friends/deleteFriendRequest';
-import removeFriend from '../services/mobile/friends/removeFriend';
+import getFriendsList from '@services/mobile/friends/getFriendsList';
+import validateUserId from '@services/validateUserId';
+import EntityNotFoundError from '@custom_errors/EntityNotFoundError';
+import validateFriendSearch from '@services/mobile/friends/validateFriendSearch';
+import getReceivedFriendRequests from '@services/mobile/friends/getRecevedFriendRequests';
+import sendFriendRequest from '@services/mobile/friends/sendFriendRequest';
+import getSentFriendRequests from '@services/mobile/friends/getSentFriendRequests';
+import declineFriendRequest from '@services/mobile/friends/declineFriendRequest';
+import acceptFriendRequest from '@services/mobile/friends/acceptFriendRequest';
+import deleteFriendRequest from '@services/mobile/friends/deleteFriendRequest';
+import removeFriend from '@services/mobile/friends/removeFriend';
 const friendsRouter = express.Router();
 
 // Gets all friend requests a user has received

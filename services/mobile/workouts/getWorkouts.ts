@@ -1,18 +1,15 @@
-import { collection, doc, getDocs } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 // Gets a snapshot of workout documents. Effective for updates but not for displaying info
 // Different from getWorkouts() inside getUserInfo.tsx
 const getWorkouts = async (userId: string) => {
-
+    
     // Reference to the user's workouts collection in Firestore
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, userId);
-    const userWorkoutsCollectionRef = collection(userDocRef, 'workouts');
+    const userDocRef = FIRESTORE_ADMIN.collection('users').doc(userId);
+    const userWorkoutsCollectionRef = userDocRef.collection('workouts');
 
-    const userWorkoutsSnapshot = await getDocs(userWorkoutsCollectionRef);
+    const userWorkoutsSnapshot = await userWorkoutsCollectionRef.get();
     return userWorkoutsSnapshot;
-
 }
 
-export default getWorkouts
+export default getWorkouts;

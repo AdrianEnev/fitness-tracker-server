@@ -1,4 +1,4 @@
-import BadRequestError from "../errors/custom_errors/BadRequestError";
+import BadRequestError from "@custom_errors/BadRequestError";
 
 const isValidFirebaseUid = (uid: string): boolean => {
     const firebaseIdRegex = /^[a-zA-Z0-9_-]{28}$/;

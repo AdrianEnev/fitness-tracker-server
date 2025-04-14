@@ -1,18 +1,15 @@
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../config/firebaseConfig";
-import type { FoodDay, Food } from '../../config/interfaces';
+import type { FoodDay, Food } from '@config/interfaces';
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 // Gets all info about specific food day using its date
 const getFoodDay = async (foodDayDate: string, userId: any): Promise<FoodDay | null> => {
-   
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, userId);
-    const foodDaysCollectionRef = collection(userDocRef, "food_days");
-    const foodDayDocRef = doc(foodDaysCollectionRef, foodDayDate);
 
-    const foodDaySnapshot = await getDoc(foodDayDocRef);
+    const userDocRef = FIRESTORE_ADMIN.collection('users').doc(userId);
+    const foodDayDocRef = userDocRef.collection("food_days").doc(foodDayDate);
 
-    if (!foodDaySnapshot.exists()) {
+    const foodDaySnapshot = await foodDayDocRef.get();
+
+    if (!foodDaySnapshot.exists) {
         console.log('No food day found, returning null');
         return null;
     }
@@ -20,8 +17,7 @@ const getFoodDay = async (foodDayDate: string, userId: any): Promise<FoodDay | n
     const foodDayData = foodDaySnapshot.data();
     const foods: Food[] = [];
 
-    const foodsCollectionRef = collection(foodDayDocRef, 'foods');
-    const foodsSnapshot = await getDocs(foodsCollectionRef);
+    const foodsSnapshot = await foodDayDocRef.collection('foods').get();
 
     for (const foodDoc of foodsSnapshot.docs) {
         foods.push({

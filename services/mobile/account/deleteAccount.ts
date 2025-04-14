@@ -5,7 +5,7 @@ import { deleteObject, getStorage, ref } from 'firebase/storage';
 import InternalError from "@custom_errors/InternalError";
 import { getMetadata } from "firebase/storage";
 const storage = getStorage();
-const firestore_admin = admin.firestore();
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const deleteAccount = async (userId: any, verified: boolean) => {
     console.log("Deleting account...");
@@ -143,8 +143,11 @@ const deleteCollectionRecursively = async (docRef: FirebaseFirestore.DocumentRef
 // This includes food days, workouts, saved workouts, and user info
 // No errors would be thrown if document does not exist (default firestore behavior)
 const deleteSubDirectories = async (userId: string) => {
+
+    console.log('Deleting subdirectories! This might take a while...');
+
     try {
-        const userRef = firestore_admin.collection('users').doc(userId);
+        const userRef = FIRESTORE_ADMIN.collection('users').doc(userId);
 
         /** ───── WORKOUTS ───── **/
         const workoutsDocs = await userRef.listCollections();

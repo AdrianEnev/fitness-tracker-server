@@ -1,8 +1,8 @@
 import express from 'express';
 const savedWorkoutsRouter = express.Router();
-import { getSavedWorkout } from '../services/web/getSavedWorkout';
-import validateUserId from '../services/validateUserId';
-import EntityNotFoundError from '../errors/custom_errors/EntityNotFoundError';
+import { getSavedWorkout } from '@services/web/getSavedWorkout';
+import validateUserId from '@services/validateUserId';
+import EntityNotFoundError from '@custom_errors/EntityNotFoundError';
 
 savedWorkoutsRouter.get('/', (req, res) => {
     res.json({ message: 'Saved workouts list' });

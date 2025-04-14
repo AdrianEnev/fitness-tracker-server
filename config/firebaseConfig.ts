@@ -35,7 +35,7 @@ const FIRESTORE_DB = getFirestore(FIREBASE_APP);
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
 });
-
 const FIREBASE_ADMIN = admin;
+const FIRESTORE_ADMIN = FIREBASE_ADMIN.firestore();
 
-export { FIREBASE_APP, FIRESTORE_DB, FIREBASE_ADMIN };
+export { FIREBASE_APP, FIRESTORE_DB, FIREBASE_ADMIN, FIRESTORE_ADMIN };

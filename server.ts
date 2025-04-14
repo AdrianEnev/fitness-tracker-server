@@ -1,14 +1,14 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import userRouter from './routes/users';
-import workoutsRouter from './routes/workouts';
-import foodDaysRouter from './routes/foodDays';
-import savedWorkoutsRouter from './routes/savedWorkouts';
-import modelsRouter from './routes/models';
-import stripeRouter from './routes/stripe';
+import userRouter from '@routes/users';
+import workoutsRouter from '@routes/workouts';
+import foodDaysRouter from '@routes/foodDays';
+import savedWorkoutsRouter from '@routes/savedWorkouts';
+import modelsRouter from '@routes/models';
+import stripeRouter from '@routes/stripe';
 import cors from "cors";
-import friendsRouter from './routes/friends';
-import errorHandler from './middleware/errorHandler';
+import friendsRouter from '@routes/friends';
+import errorHandler from '@middleware/errorHandler';
 
 const app = express();
 app.use(cors());

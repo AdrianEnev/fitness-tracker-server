@@ -1,44 +1,40 @@
-import { doc, collection, runTransaction, deleteDoc } from "firebase/firestore";
-import InternalError from "../../../errors/custom_errors/InternalError";
-import { FIRESTORE_DB } from "../../../config/firebaseConfig";
+import InternalError from "@custom_errors/InternalError";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const handleDeleteFriendRequest = async (userToCheck: any, loggedUserId: string) => {
+    
+    const usersCollectionRef = FIRESTORE_ADMIN.collection('users');
 
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-
-    const userDocRef = doc(usersCollectionRef, loggedUserId);
-    const userInfoCollectionRef = collection(userDocRef, 'user_info');
-    const friendRequestsDocRef = doc(userInfoCollectionRef, 'friendRequests');
-
-    // delete sent from logged user
-    const sentCollectionRef = collection(friendRequestsDocRef, 'sent');
-    const requestDocRef = doc(sentCollectionRef, userToCheck.id);
+    const requestDocRef = usersCollectionRef
+        .doc(loggedUserId)
+        .collection('user_info')
+        .doc('friendRequests')
+        .collection('sent')
+        .doc(userToCheck.id);
 
     try {
-        await deleteDoc(requestDocRef);
-        console.log(`Step 1 - sucessful (Deleted request to ${userToCheck.username})`);
-
+        await requestDocRef.delete();
+        console.log(`Step 1 - successful (Deleted request to ${userToCheck.username})`);
     } catch (err) {
+        console.error('Step 1 - error -> ', err);
         throw new InternalError(`Error deleting request to ${userToCheck.username}`);
     }
 
-    // delete recieved from other user
-    const otherUserDocRef = doc(usersCollectionRef, userToCheck.id);
-    const otherUserInfoCollectionRef = collection(otherUserDocRef, 'user_info');
-    const otherUserFriendRequestsDocRef = doc(otherUserInfoCollectionRef, 'friendRequests');
+    const receivedDocRef = usersCollectionRef
+        .doc(userToCheck.id)
+        .collection('user_info')
+        .doc('friendRequests')
+        .collection('received')
+        .doc(loggedUserId);
 
     try {
-        const receivedCollectionRef = collection(otherUserFriendRequestsDocRef, 'received');
-        const recievedDocRef = doc(receivedCollectionRef, loggedUserId)
-
-        await deleteDoc(recievedDocRef)
-        console.log(`Step 2 - successful (deleted request by ${userToCheck.username})`)
-
-    }catch (err) {
-        console.log('Step 2 - error -> ', err)
+        await receivedDocRef.delete();
+        console.log(`Step 2 - successful (Deleted request by ${userToCheck.username})`);
+    } catch (err) {
+        console.error('Step 2 - error -> ', err);
+        // Optional: silently fail or throw an error depending on your preference
     }
-
-}
+};
 
 const deleteFriendRequest = async (userToCheck: any, loggedUserId: string) => {
     try {
@@ -46,6 +42,6 @@ const deleteFriendRequest = async (userToCheck: any, loggedUserId: string) => {
     } catch (error) {
         throw new InternalError('Error deleting friend request!');
     }
-}
+};
 
 export default deleteFriendRequest;

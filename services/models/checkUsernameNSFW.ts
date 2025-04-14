@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import InternalError from '../../errors/custom_errors/InternalError';
+import InternalError from '@custom_errors/InternalError';
 dotenv.config();
 
 const apiToken = process.env.BACKEND_HUGGINGFACE_API_TOKEN;

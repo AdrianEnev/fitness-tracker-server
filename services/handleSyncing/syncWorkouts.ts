@@ -1,94 +1,86 @@
-import { addDoc, collection, doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../config/firebaseConfig";
+import admin from "firebase-admin";
 import getWorkouts from "../mobile/workouts/getWorkouts";
 import { generateRandomColour } from "../generateRandomColour";
-import InternalError from "../../errors/custom_errors/InternalError";
+import InternalError from "@custom_errors/InternalError";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
-// Sync workouts -> compare user Id firebase workouts to provided asyncstorage workouts and add any missing ones to firebase
 const syncWorkouts = async (userId: string, localWorkouts: any) => {
 
-    console.log('Sync WORKOUTS?...', userId)
+    console.log('Attempting to sync workouts for', userId);
 
     if (!localWorkouts) {
         throw new InternalError("No workouts provided to sync!");
     }
 
-    // Local storage workouts
     const numLocalWorkouts = localWorkouts.length;
 
-    // 0 workouts stored locally -> nothing to sync
-    if (numLocalWorkouts == 0) {
-        console.log('No workouts to sync!')
+    if (numLocalWorkouts === 0) {
+        console.log('No workouts to sync!');
         return;
     }
 
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, userId);
-    const userWorkoutsCollectionRef = collection(userDocRef, 'workouts');
+    const userDocRef = FIRESTORE_ADMIN.collection('users').doc(userId);
+    const userWorkoutsCollectionRef = userDocRef.collection('workouts');
 
-    // Firebase workouts
+    // Get workouts from Firestore
     const firebaseWorkouts = await getWorkouts(userId);
     const numDatabaseWorkouts = firebaseWorkouts.size;
 
-    console.log('Firebase workouts: ', numDatabaseWorkouts)
-    console.log('AsyncStorage workouts: ', numLocalWorkouts)
+    console.log('Firebase workouts: ', numDatabaseWorkouts);
+    console.log('AsyncStorage workouts: ', numLocalWorkouts);
 
-    // Add missing workouts to firebase
     if (numLocalWorkouts > numDatabaseWorkouts) {
-
-        console.log('Adding missing workouts to firebase...')
+        console.log('Adding missing workouts to firebase...');
 
         const missingWorkouts = localWorkouts.filter((localWorkout: any) => {
             return !firebaseWorkouts.docs.some((doc) => doc.id === localWorkout.id);
         });
 
-        // Add missing workouts to Firestore
-        missingWorkouts.forEach(async (workout: any) => {
-            const workoutDocRef = doc(userWorkoutsCollectionRef, workout.id);
+        for (const workout of missingWorkouts) {
+            const workoutDocRef = userWorkoutsCollectionRef.doc(workout.id);
 
-            await setDoc(workoutDocRef, {
+            await workoutDocRef.set({
                 title: workout.title?.trim() || 'Untitled Workout',
-                created: workout.created || serverTimestamp(),
+                created: workout.created || admin.firestore.FieldValue.serverTimestamp(),
                 colour: workout.colour || generateRandomColour(),
                 numberOfExercises: workout.numberOfExercises || 0
             });
 
-            // Add workout info to Firestore
-            const workoutInfoCollectionRef = collection(workoutDocRef, "info");
+            const workoutInfoCollectionRef = workoutDocRef.collection("info");
 
             try {
-                workout.info?.forEach((exercise: any) => {
-                    exercise.sets?.forEach(async (set: any, index: any) => {
+                for (const exercise of workout.info || []) {
+                    for (const [index, set] of (exercise.sets || []).entries()) {
                         if (exercise.title === '') {
                             exercise.title = "Exercise " + (exercise.exerciseIndex);
                         }
-                        const exerciseDocRef = doc(workoutInfoCollectionRef, (exercise.exerciseIndex).toString());
 
-                        await setDoc(exerciseDocRef, {
+                        const exerciseDocRef = workoutInfoCollectionRef.doc(exercise.exerciseIndex.toString());
+
+                        await exerciseDocRef.set({
                             title: exercise.title.trim(),
                             exerciseIndex: exercise.exerciseIndex,
                         });
 
-                        const exerciseSets = collection(exerciseDocRef, "sets");
+                        const exerciseSets = exerciseDocRef.collection("sets");
 
-                        await addDoc(exerciseSets, {
+                        await exerciseSets.add({
                             reps: set.reps,
                             weight: set.weight,
-                            intensity: set.intensity ? set.intensity : null,
+                            intensity: set.intensity || null,
                             setIndex: index + 1
                         });
-                    });
-                });
+                    }
+                }
 
-                console.log('Added workout successfuly, id:', workout.id)
+                console.log('Added workout successfully, id:', workout.id);
             } catch (err) {
                 throw new InternalError("Failed to sync workout details");
             }
-        });
+        }
 
         console.log('Workouts synced');
     }
-
-}
+};
 
 export default syncWorkouts;

@@ -1,11 +1,11 @@
 
 import express from 'express';
-import checkUsernameNSFW from '../services/models/checkUsernameNSFW';
-import generateWorkout from '../services/models/generateWorkout';
-import scanImage from '../services/models/checkImageNSFW';
-import fetchFoodData from '../services/models/searchFood';
-import BadRequestError from '../errors/custom_errors/BadRequestError';
-import InternalError from '../errors/custom_errors/InternalError';
+import checkUsernameNSFW from '@services/models/checkUsernameNSFW';
+import generateWorkout from '@services/models/generateWorkout';
+import scanImage from '@services/models/checkImageNSFW';
+import fetchFoodData from '@services/models/searchFood';
+import BadRequestError from '@custom_errors/BadRequestError';
+import InternalError from '@custom_errors/InternalError';
 const modelsRouter = express.Router();
 
 modelsRouter.get('/', (req, res) => {

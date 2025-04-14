@@ -1,18 +1,16 @@
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
-import { FIRESTORE_DB } from "../../config/firebaseConfig";
-import type { Workout, Exercise, Set } from '../../config/interfaces';
-import InternalError from "../../errors/custom_errors/InternalError";
+import type { Workout, Exercise, Set } from '@config/interfaces';
+import InternalError from "@custom_errors/InternalError";
+import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 export const getSavedWorkout = async (savedWorkoutId: string, currentUserUid: any): Promise<Workout | null> => {
+    
+    //console.log('Attempting to retrieve saved workout...');
+    const userDocRef = FIRESTORE_ADMIN.collection('users').doc(currentUserUid);
+    const savedWorkoutDocRef = userDocRef.collection('saved_workouts').doc(savedWorkoutId);
 
-    const usersCollectionRef = collection(FIRESTORE_DB, 'users');
-    const userDocRef = doc(usersCollectionRef, currentUserUid);
-    const savedWorkoutsCollectionRef = collection(userDocRef, 'saved_workouts');
-    const savedWorkoutDocRef = doc(savedWorkoutsCollectionRef, savedWorkoutId);
+    const savedWorkoutSnap = await savedWorkoutDocRef.get();
 
-    const savedWorkoutSnap = await getDoc(savedWorkoutDocRef);
-
-    if (!savedWorkoutSnap.exists()) {
+    if (!savedWorkoutSnap.exists) {
         console.log('No saved workout found, returning null');
         return null;
     }
@@ -20,32 +18,30 @@ export const getSavedWorkout = async (savedWorkoutId: string, currentUserUid: an
     const savedWorkoutData = savedWorkoutSnap.data();
     const exercises: Exercise[] = [];
 
-    const exercisesCollectionRef = collection(savedWorkoutDocRef, 'info');
-    const exercisesSnapshot = await getDocs(exercisesCollectionRef);
+    const exercisesSnapshot = await savedWorkoutDocRef.collection('info').get();
 
-    try{
+    try {
         for (const exerciseDoc of exercisesSnapshot.docs) {
             const exerciseData = exerciseDoc.data();
             const sets: Set[] = [];
-    
-            const setsCollectionRef = collection(exerciseDoc.ref, 'sets');
-            const setsSnapshot = await getDocs(setsCollectionRef);
-    
+
+            const setsSnapshot = await exerciseDoc.ref.collection('sets').get();
+
             for (const setDoc of setsSnapshot.docs) {
                 sets.push({
                     ...setDoc.data(),
                     id: setDoc.id
                 } as Set);
             }
-    
+
             exercises.push({
                 ...exerciseData,
                 sets,
                 id: exerciseDoc.id
             } as Exercise);
         }
-    }catch (err) {
-        throw new InternalError('Error handling exercises for saved workout')
+    } catch (err) {
+        throw new InternalError('Error handling exercises for saved workout');
     }
 
     return {
@@ -53,4 +49,4 @@ export const getSavedWorkout = async (savedWorkoutId: string, currentUserUid: an
         exercises,
         id: savedWorkoutSnap.id
     } as Workout;
-}
+};
