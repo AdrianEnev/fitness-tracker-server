@@ -69,7 +69,8 @@ const isUsernameInList = (username: string) => {
         "julian", "nova", "luke", "isla", "grayson", "grace", "isaac", "violet", "jayden", "aurora",
         "theodore", "riley", "gabriel", "zoey", "anthony", "willow", "dylan", "emilia", "leo", "stella",
         "lincoln", "zoe", "jaxon", "victoria", "asher", "hannah", "christopher", "addison", "josiah", "leah",
-        "andrew", "lucy", "thomas", "eliana", "joshua", "ivy", "ezra", "everly", "adrian", "alex", "jordan",
+        "andrew", "lucy", "thomas", "eliana", "joshua", "ivy", "ezra", "everly", "adrian", "alex", "jordan", 
+        "gregory", "greg"
     ]);
 
     return Promise.resolve(popularNames.has(username));

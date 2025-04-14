@@ -11,6 +11,7 @@ import syncSavedWorkouts from '../services/handleSyncing/syncSavedWorkouts';
 import syncWorkoutsInFolders from '../services/handleSyncing/syncWorkoutsInFolders';
 import changeLanguage from '../services/changeLanguage';
 import deleteAccount from '@services/mobile/account/deleteAccount';
+import changeUsername from '@services/mobile/account/changeUsername';
 
 userRouter.get('/', (req, res) => {
     res.json({ message: 'Users list' });
@@ -31,6 +32,7 @@ userRouter.put('/matchAccounts', async (req, res) => {
     
 });
 
+// Changes language of user in database
 userRouter.put('/:userId/language', async (req, res) => {
 
     const userId: string = req.params.userId;
@@ -100,6 +102,21 @@ userRouter.delete('/:userId', async (req, res) => {
 
     await deleteAccount(userId, Boolean(isVerified));
     res.status(204).send();
+})
+
+// Changes username of user
+userRouter.put('/:userId/username', async (req, res) => {
+
+    const userId: string = req.params.userId;
+    const username = req.query.username as string;
+    const newUsername = req.query.newUsername as string;
+
+    await validateUserId(userId);
+
+    // Result returns specific message if username is taken/NSFW/too short/...
+    const result = await changeUsername(username, newUsername, userId);
+    res.json({message: result || 'Username successfully changed.' })
+
 })
 
 export default userRouter;
