@@ -1,5 +1,6 @@
 import InternalError from "@custom_errors/InternalError";
 import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
+import BadRequestError from "@custom_errors/BadRequestError";
 
 // Deletes any subcollections of a given workout to avoid ghost documents inside firebase
 const deleteSubcollections = async (docRef: any) => {
@@ -25,10 +26,13 @@ const deleteSubcollections = async (docRef: any) => {
 
 // Can be used to delete 1 or more workouts at a time
 export const deleteWorkouts = async (
-    selectedWorkouts: any,
+    workouts: any,
     userId: any
 ) => {
-    console.log('Running workout deletion...')
+
+    if (!workouts) {
+        throw new BadRequestError('No workouts to delete provided!');
+    }
 
     const usersCollectionRef = FIRESTORE_ADMIN.collection('users');
     const userDocRef = usersCollectionRef.doc(userId);
@@ -37,20 +41,20 @@ export const deleteWorkouts = async (
     const batch = FIRESTORE_ADMIN.batch();
 
     try {
-        for (const selectedWorkout of selectedWorkouts) {
-            const selectedWorkoutID = selectedWorkout.id;
-            const selectedWorkoutDoc = userWorkoutsCollectionRef.doc(selectedWorkoutID);
+        for (const workout of workouts) {
+            const workoutID = workout.id;
+            const workoutDoc = userWorkoutsCollectionRef.doc(workoutID);
 
             // Delete all subcollections and their documents
-            await deleteSubcollections(selectedWorkoutDoc);
+            await deleteSubcollections(workoutDoc);
 
             // Delete the workout document
-            batch.delete(selectedWorkoutDoc);
-            console.log(`Workout with ID ${selectedWorkoutID} added to batch for deletion`);
+            batch.delete(workoutDoc);
+            console.log(`Workout with ID ${workoutID} added to batch for deletion`);
         }
 
         await batch.commit();
-        console.log('Batch deletion committed');
+        console.log('Workouts batch deletion committed');
     } catch (err) {
         throw new InternalError("Failed to delete workout/s");
     }

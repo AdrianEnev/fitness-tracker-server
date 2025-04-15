@@ -1,7 +1,6 @@
-import admin from "firebase-admin";
 import { generateRandomColour } from '../generateRandomColour';
 import InternalError from '@custom_errors/InternalError';
-import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
+import { FIRESTORE_ADMIN, FIREBASE_ADMIN } from '@config/firebaseConfig';
 
 const syncWorkoutsInFolders = async (userId: string, localFolders: any) => { 
 
@@ -24,7 +23,7 @@ const syncWorkoutsInFolders = async (userId: string, localFolders: any) => {
             if (!workoutSnapshot.exists) {
                 await workoutDocRef.set({
                     title: localWorkout.title?.trim() || 'Untitled Workout',
-                    created: localWorkout.created || admin.firestore.FieldValue.serverTimestamp(),
+                    created: localWorkout.created || FIREBASE_ADMIN.firestore.Timestamp.now(),
                     colour: localWorkout.colour || generateRandomColour(), 
                     numberOfExercises: localWorkout.numberOfExercises || 0,
                     folderId: folder.id

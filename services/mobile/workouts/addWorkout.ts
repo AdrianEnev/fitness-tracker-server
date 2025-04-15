@@ -1,8 +1,7 @@
 
 import { generateRandomColour } from '@services/generateRandomColour';
 import InternalError from '@custom_errors/InternalError';
-import { serverTimestamp } from 'firebase/firestore';
-import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
+import { FIRESTORE_ADMIN, FIREBASE_ADMIN } from '@config/firebaseConfig';
 
 const addWorkout = async (userId: string, language: string, exercises: any, workoutTitle: string, workoutId: any, folder?: any) => {
 
@@ -36,7 +35,7 @@ const addWorkout = async (userId: string, language: string, exercises: any, work
         try {
             await workoutDocRef.set({
                 title: workoutTitle.trim(),
-                created: serverTimestamp(),
+                created: FIREBASE_ADMIN.firestore.Timestamp.now(),
                 colour: generateRandomColour(),
                 numberOfExercises: 0,
                 folderId: folder ? folder.id : null
@@ -51,13 +50,13 @@ const addWorkout = async (userId: string, language: string, exercises: any, work
         try {
             await workoutDocRef.set({
                 title: workoutTitle.trim(),
-                created: serverTimestamp(),
+                created: FIREBASE_ADMIN.firestore.Timestamp.now(),
                 colour: generateRandomColour(),
                 numberOfExercises: exercises.length,
                 folderId: folder ? folder.id : null
             });
-        } catch (err) {
-            throw new InternalError("Failed to add workout");
+        } catch (error: any) {
+            throw new InternalError("Failed to add workout: " + error);
         }
 
         const workoutInfoCollectionRef = workoutDocRef.collection("info");

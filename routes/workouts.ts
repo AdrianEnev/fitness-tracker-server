@@ -82,12 +82,12 @@ workoutsRouter.post('/:userId', async (req, res) => {
 // Can be used to delete 1 or more workouts at a time
 workoutsRouter.delete('/:userId', async (req, res) => {
     
-    const { selectedWorkouts } = req.body;
     const userId: string = req.params.userId;
-
     await validateUserId(userId);
+
+    const { workouts } = req.body;
     
-    await deleteWorkouts(selectedWorkouts, userId);
+    await deleteWorkouts(workouts, userId);
     res.status(204).send();
 
 });

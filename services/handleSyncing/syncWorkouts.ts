@@ -1,12 +1,11 @@
-import admin from "firebase-admin";
 import getWorkouts from "../mobile/workouts/getWorkouts";
 import { generateRandomColour } from "../generateRandomColour";
 import InternalError from "@custom_errors/InternalError";
-import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
+import { FIRESTORE_ADMIN, FIREBASE_ADMIN } from '@config/firebaseConfig';
 
 const syncWorkouts = async (userId: string, localWorkouts: any) => {
 
-    console.log('Attempting to sync workouts for', userId);
+    //console.log('Attempting to sync workouts for', userId);
 
     if (!localWorkouts) {
         throw new InternalError("No workouts provided to sync!");
@@ -15,7 +14,7 @@ const syncWorkouts = async (userId: string, localWorkouts: any) => {
     const numLocalWorkouts = localWorkouts.length;
 
     if (numLocalWorkouts === 0) {
-        console.log('No workouts to sync!');
+        //console.log('No workouts to sync!');
         return;
     }
 
@@ -26,8 +25,8 @@ const syncWorkouts = async (userId: string, localWorkouts: any) => {
     const firebaseWorkouts = await getWorkouts(userId);
     const numDatabaseWorkouts = firebaseWorkouts.size;
 
-    console.log('Firebase workouts: ', numDatabaseWorkouts);
-    console.log('AsyncStorage workouts: ', numLocalWorkouts);
+    //console.log('Firebase workouts: ', numDatabaseWorkouts);
+    //console.log('AsyncStorage workouts: ', numLocalWorkouts);
 
     if (numLocalWorkouts > numDatabaseWorkouts) {
         console.log('Adding missing workouts to firebase...');
@@ -41,7 +40,7 @@ const syncWorkouts = async (userId: string, localWorkouts: any) => {
 
             await workoutDocRef.set({
                 title: workout.title?.trim() || 'Untitled Workout',
-                created: workout.created || admin.firestore.FieldValue.serverTimestamp(),
+                created: workout.created || FIREBASE_ADMIN.firestore.Timestamp.now(),
                 colour: workout.colour || generateRandomColour(),
                 numberOfExercises: workout.numberOfExercises || 0
             });

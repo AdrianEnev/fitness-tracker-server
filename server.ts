@@ -9,6 +9,7 @@ import stripeRouter from '@routes/stripe';
 import cors from "cors";
 import friendsRouter from '@routes/friends';
 import errorHandler from '@middleware/errorHandler';
+import globalRouter from '@routes/global';
 
 const app = express();
 app.use(cors());
@@ -28,6 +29,7 @@ app.use('/api/savedWorkouts', savedWorkoutsRouter);
 app.use('/api/foodDays', foodDaysRouter);
 app.use('/api/stripe', stripeRouter);
 app.use('/api/friends', friendsRouter);
+app.use('/api/global', globalRouter);
 
 // AI models
 app.use('/api/models', modelsRouter);

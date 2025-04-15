@@ -1,11 +1,9 @@
-import admin from "firebase-admin";
 import InternalError from "@custom_errors/InternalError";
-
-import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
+import { FIRESTORE_ADMIN, FIREBASE_ADMIN } from '@config/firebaseConfig';
 
 const syncSavedWorkouts = async (userId: string, localSavedWorkouts: any) => {
 
-    console.log('Attempting to sync saved workouts for', userId)
+    //console.log('Attempting to sync saved workouts for', userId)
 
     if (!localSavedWorkouts) {
         throw new InternalError('No saved workouts to sync!');
@@ -21,7 +19,7 @@ const syncSavedWorkouts = async (userId: string, localSavedWorkouts: any) => {
     const numLocalSavedWorkouts = localSavedWorkouts.length;
 
     if (numLocalSavedWorkouts <= numDatabaseSavedWorkouts) {
-        console.log('No saved workouts to sync!');
+        //console.log('No saved workouts to sync!');
         return;
     }
 
@@ -35,7 +33,7 @@ const syncSavedWorkouts = async (userId: string, localSavedWorkouts: any) => {
 
         await savedWorkoutDocRef.set({
             title: savedWorkout.title?.trim() || 'Untitled Workout',
-            created: savedWorkout.created || admin.firestore.FieldValue.serverTimestamp(),
+            created: savedWorkout.created || FIREBASE_ADMIN.firestore.Timestamp.now(),
             duration: savedWorkout.duration || null,
         });
 

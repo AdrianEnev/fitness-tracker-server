@@ -4,7 +4,7 @@ import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const synclocalFoodDays = async (userId: string, localFoodDays: any) => {
 
-    console.log('Attempting to sync food days for', userId);
+    //console.log('Attempting to sync food days for', userId);
 
     if (!localFoodDays) {
         throw new InternalError('No food days to sync!');
@@ -13,7 +13,7 @@ const synclocalFoodDays = async (userId: string, localFoodDays: any) => {
     const numlocalFoodDays = localFoodDays.length;
 
     if (numlocalFoodDays === 0) {
-        console.log('No food days to sync!');
+        //console.log('No food days to sync!');
         return;
     }
 

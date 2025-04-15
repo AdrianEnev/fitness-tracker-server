@@ -4,7 +4,8 @@ import InternalError from "@custom_errors/InternalError";
 import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const syncNutrients = async (userId: string, localNutrients: any) => {
-    console.log('Attempting to sync nutrients for', userId);
+    
+    //console.log('Attempting to sync nutrients for', userId);
 
     if (!localNutrients) {
         throw new InternalError('No local nutrients to sync!');
@@ -33,7 +34,7 @@ const syncNutrients = async (userId: string, localNutrients: any) => {
             return;
         }
 
-        console.log('No nutrients to sync!');
+        //console.log('No nutrients to sync!');
     } catch (err) {
         throw new InternalError('Error syncing nutrients!');
     }
