@@ -10,7 +10,7 @@ const friendAlready = async (userToCheckId: any, loggedUserInfoCollectionRef: an
     const friendDoc = await friendDocRef.get();
 
     if (friendDoc.exists) {
-        console.log('User is already a friend!');
+        console.log('Searched user is already a friend!');
         return true;
     } else {
         return false;
@@ -70,12 +70,12 @@ const validateFriendSearch = async (userToCheckId: any, loggedUserId: any) => {
 
         // User can receive friend request
         if (!hasUserDisabledFriendRequests && !isRequestPending && !isFriendAlready) {
-            console.log('User can receive friend request!');
+            console.log('Searched user can receive friend request!');
             return true;
         }
 
         // At least one of the variables was true, meaning user should not receive request
-        console.log('User should not receive request!');
+        console.log('Searched user should not receive request!');
         return false;
     } catch (err) {
         throw new InternalError('Failed to validate friend search!');

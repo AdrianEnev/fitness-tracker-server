@@ -1,6 +1,4 @@
 import InternalError from "@custom_errors/InternalError";
-
-// Initialize Firestore
 import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
 const syncNutrients = async (userId: string, localNutrients: any) => {
@@ -34,7 +32,6 @@ const syncNutrients = async (userId: string, localNutrients: any) => {
             return;
         }
 
-        //console.log('No nutrients to sync!');
     } catch (err) {
         throw new InternalError('Error syncing nutrients!');
     }

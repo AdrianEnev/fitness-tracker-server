@@ -16,10 +16,11 @@ const friendsRouter = express.Router();
 friendsRouter.get('/:userId/received', async (req, res) => {
 
     const userId: string = req.params.userId;
-
     await validateUserId(userId);
 
-    const receivedRequests = await getReceivedFriendRequests(userId);
+    const getUsers = req.query.getUsers as string;
+
+    const receivedRequests = await getReceivedFriendRequests(userId, Boolean(getUsers));
     res.json(receivedRequests);
 
 })

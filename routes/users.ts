@@ -15,6 +15,9 @@ import updateDailyGoals from '@services/mobile/food/updateDailyGoals';
 import getLungeCoins from '@services/mobile/account/lungeCoins/getLungeCoins';
 import addLungeCoins from '@services/mobile/account/lungeCoins/addLungeCoins';
 import decrementLungeCoins from '@services/mobile/account/lungeCoins/decrementLungeCoins';
+import retreiveWorkouts from '@services/handleRetreiving/retreiveWorkouts';
+import retreiveSavedWorkouts from '@services/handleRetreiving/retreiveSavedWorkouts';
+import retreiveFoodDays from '@services/handleRetreiving/retreiveFoodDays';
 
 userRouter.get('/', (req, res) => {
     res.json({ message: 'Users list' });
@@ -40,7 +43,7 @@ userRouter.get('/:userId', async (req, res) => {
 
 // Sync user info
 // Compares local info on mobile app to firebase info and fixes any missmatches
-userRouter.put('/:userId', async (req, res) => {
+userRouter.put('/:userId/sync', async (req, res) => {
 
     // TODO: add "checkUsernamesMatch" from a seperate function to here
 
@@ -64,6 +67,31 @@ userRouter.put('/:userId', async (req, res) => {
     
     res.status(204).send();
 
+})
+
+// Retreive user info for mobile app
+userRouter.put('/:userId/retreive', async (req, res) => {
+
+    const userId: string = req.params.userId;
+    await validateUserId(userId);
+
+    const {
+        asyncStorageWorkouts,
+        asyncStorageFoodDayKeys,
+        asyncStorageSavedWorkouts,
+    } = req.body || {};
+
+    const missingWorkouts = await retreiveWorkouts(asyncStorageWorkouts, userId);
+    const missingFoodDays = await retreiveFoodDays(asyncStorageFoodDayKeys, userId);
+    const missingSavedWorkouts = await retreiveSavedWorkouts(asyncStorageSavedWorkouts, userId);
+
+    const missingData = {
+        missingWorkouts: missingWorkouts,
+        missingSavedWorkouts: missingSavedWorkouts,
+        missingFoodDays: missingFoodDays?.missingFoodDays,
+    }
+    res.json(missingData);
+    
 })
 
 // Deletes account assuming no sub-documents or collections exist

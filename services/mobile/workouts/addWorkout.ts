@@ -1,5 +1,5 @@
 
-import { generateRandomColour } from '@services/generateRandomColour';
+import { generateRandomColour } from '@utils/generateRandomColour';
 import InternalError from '@custom_errors/InternalError';
 import { FIRESTORE_ADMIN, FIREBASE_ADMIN } from '@config/firebaseConfig';
 

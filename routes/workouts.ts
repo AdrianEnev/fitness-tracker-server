@@ -7,6 +7,7 @@ import { deleteWorkouts } from '@services/mobile/workouts/deleteWorkouts';
 import addWorkout from '@services/mobile/workouts/addWorkout';
 import EntityNotFoundError from '@custom_errors/EntityNotFoundError';
 import validateUserId from '@services/validateUserId';
+import saveWorkoutEdits from '@services/mobile/workouts/saveWorkoutEdits';
 
 // Gets a snapshot of workout documents. Effective for updates but not for displaying info
 workoutsRouter.get("/:userId", async (req, res) => {
@@ -88,6 +89,20 @@ workoutsRouter.delete('/:userId', async (req, res) => {
     const { workouts } = req.body;
     
     await deleteWorkouts(workouts, userId);
+    res.status(204).send();
+
+});
+
+// Save workout edits
+workoutsRouter.put('/:userId/saveWorkoutEdits/:workoutId', async (req, res) => {
+
+    const userId: string = req.params.userId;
+    await validateUserId(userId);
+
+    const { workoutData } = req.body;
+    const workoutId: string = req.params.workoutId;
+    
+    await saveWorkoutEdits(workoutData, userId, workoutId);
     res.status(204).send();
 
 });

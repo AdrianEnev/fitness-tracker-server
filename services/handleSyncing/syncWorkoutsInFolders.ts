@@ -1,10 +1,9 @@
-import { generateRandomColour } from '../generateRandomColour';
+import { generateRandomColour } from '../../utils/generateRandomColour';
 import InternalError from '@custom_errors/InternalError';
 import { FIRESTORE_ADMIN, FIREBASE_ADMIN } from '@config/firebaseConfig';
 
 const syncWorkoutsInFolders = async (userId: string, localFolders: any) => { 
 
-    console.log('Sync WORKOUTS IN FOLDERS?', userId);
 
     if (!localFolders) {
         throw new InternalError('No folders found!');

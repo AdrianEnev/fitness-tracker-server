@@ -34,6 +34,7 @@ const FIRESTORE_DB = getFirestore(FIREBASE_APP);
 // Initialize Firebase Admin
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
+    storageBucket: process.env.BACKEND_FIREBASE_STORAGE_BUCKET
 });
 const FIREBASE_ADMIN = admin;
 const FIRESTORE_ADMIN = FIREBASE_ADMIN.firestore();

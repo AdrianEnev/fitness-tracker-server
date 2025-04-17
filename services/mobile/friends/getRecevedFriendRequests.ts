@@ -1,7 +1,8 @@
 import InternalError from "@custom_errors/InternalError";
 import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 
-const getReceivedFriendRequests = async (userId: string) => {
+const getReceivedFriendRequests = async (userId: string, getUsers: boolean) => {
+
     console.log("Attempting to retrieve received friend requests...");
 
     try {
@@ -17,8 +18,15 @@ const getReceivedFriendRequests = async (userId: string) => {
         const receivedCollectionRef = friendRequestsDocRef.collection("received");
         const snapshot = await receivedCollectionRef.get();
 
+        // getUsers is false -> only the number of received requests is needed
+        // Otherwise all users who have sent a request to user are returned
+        if (!getUsers){
+            return snapshot.size;
+        }
+
         const receivedRequests = snapshot.docs.map(doc => {
             const data = doc.data();
+
             // Flipped because of frontend behavior
             return {
                 id: data.username,
