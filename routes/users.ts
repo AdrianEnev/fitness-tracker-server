@@ -1,6 +1,6 @@
 import express from 'express';
 const userRouter = express.Router();
-import getUserInfo from '@services/getUserInfo';
+import getUserInfo, { getUsername } from '@services/getUserInfo';
 import validateUserId from '@services/validateUserId';
 import EntityNotFoundError from '@custom_errors/EntityNotFoundError';
 import syncNutrients from '@services/handleSyncing/syncNutrients';
@@ -18,10 +18,21 @@ import decrementLungeCoins from '@services/mobile/account/lungeCoins/decrementLu
 import retreiveWorkouts from '@services/handleRetreiving/retreiveWorkouts';
 import retreiveSavedWorkouts from '@services/handleRetreiving/retreiveSavedWorkouts';
 import retreiveFoodDays from '@services/handleRetreiving/retreiveFoodDays';
+import registerUser from '@services/mobile/account/registerUser';
+import loginUser from '@services/mobile/account/loginUser';
 
 userRouter.get('/', (req, res) => {
     res.json({ message: 'Users list' });
 });
+
+userRouter.post('/registerUser', async (req, res) => {
+    
+    const { username, newUser } = req.body;
+
+    const result = await registerUser(username, newUser);
+    res.json({ message: result });
+
+})
 
 // Gets all kinds of user info (workouts, food, language, etc.)
 // Currently only being used for the web app
@@ -40,6 +51,16 @@ userRouter.get('/:userId', async (req, res) => {
     res.json(userInfo);
     
 });
+
+userRouter.get('/:userId/loginUser', async (req, res) => {
+    
+    const userId: string = req.params.userId;
+    await validateUserId(userId);
+
+    const result = await loginUser(userId);
+    res.json(result);
+
+})
 
 // Sync user info
 // Compares local info on mobile app to firebase info and fixes any missmatches
@@ -86,9 +107,9 @@ userRouter.put('/:userId/retreive', async (req, res) => {
     const missingSavedWorkouts = await retreiveSavedWorkouts(asyncStorageSavedWorkouts, userId);
 
     const missingData = {
-        missingWorkouts: missingWorkouts,
-        missingSavedWorkouts: missingSavedWorkouts,
-        missingFoodDays: missingFoodDays?.missingFoodDays,
+        missingWorkouts: missingWorkouts || [],
+        missingSavedWorkouts: missingSavedWorkouts || [],
+        missingFoodDays: missingFoodDays || [],
     }
     res.json(missingData);
     
@@ -119,6 +140,19 @@ userRouter.put('/:userId/username', async (req, res) => {
     // Result returns specific message if username is taken/NSFW/too short/...
     const result = await changeUsername(username, newUsername, userId);
     res.json({message: result || 'Username successfully changed.' })
+
+})
+
+// Gets username of user
+// Used for basic username retreival or to check if asyncstorage username matches firebase on
+userRouter.get('/:userId/username', async (req, res) => {
+
+    const userId: string = req.params.userId;
+    await validateUserId(userId);
+
+    // Returns 
+    const result = await getUsername(userId);
+    res.json(result)
 
 })
 
@@ -155,7 +189,7 @@ userRouter.get('/:userId/lungeCoins', async (req, res) => {
     await validateUserId(userId);
 
     const amount = await getLungeCoins(userId);
-    res.json({ amount });
+    res.json(amount);
     
 })
 

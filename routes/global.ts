@@ -33,4 +33,5 @@ globalRouter.get('/searchFriend', async (req, res) => {
 
 })
 
+
 export default globalRouter;

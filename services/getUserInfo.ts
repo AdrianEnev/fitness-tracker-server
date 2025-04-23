@@ -2,6 +2,7 @@ import { FIRESTORE_ADMIN } from '@config/firebaseConfig';
 import { Timestamp } from 'firebase/firestore';
 
 const getUserInfo = async (userId: string) => {
+    
     const userDocRef = FIRESTORE_ADMIN.collection("users").doc(userId);
     const userInfoCollectionRef = userDocRef.collection("user_info");
 
@@ -9,14 +10,14 @@ const getUserInfo = async (userId: string) => {
 
     console.log('Retrieving user info...');
     try {
+        const username = await getUsername(userId);
+        const dailyGoals = await getDailyGoals(userId);
         const language = await getLanguage(userInfoCollectionRef);
         const workouts = await getWorkouts(userDocRef);
         const savedWorkouts = await getSavedWorkouts(userDocRef);
         const foodDays = await getFoodDays(userDocRef);
         const friends = await getFriends(userInfoCollectionRef);
         const statistics = await getStatistics(userInfoCollectionRef);
-        const username = await getUsername(userInfoCollectionRef);
-        const dailyGoals = await getDailyGoals(userInfoCollectionRef);
         const dateRegistered = await getDateRegistered(userDocSnapshot);
         const isOnline = await getIsUserOnline(userDocSnapshot);
 
@@ -42,6 +43,36 @@ const getUserInfo = async (userId: string) => {
 }
 
 export default getUserInfo;
+
+export const getUsername = async (userId: string) => {
+
+    const userDocRef = FIRESTORE_ADMIN.collection("users").doc(userId);
+    const userInfoCollectionRef = userDocRef.collection("user_info");
+    const usernameDocRef = userInfoCollectionRef.doc("username");
+    const username = await usernameDocRef.get();
+
+    if (username.exists) {
+        const usernameData = username.data()?.username;
+        return usernameData;
+    }
+
+    return null;
+}
+
+export const getDailyGoals = async (userId: string) => {
+
+    const userDocRef = FIRESTORE_ADMIN.collection("users").doc(userId);
+    const userInfoCollectionRef = userDocRef.collection("user_info");
+    const dailyGoalsDocRef = userInfoCollectionRef.doc("nutrients");
+    const dailyGoals = await dailyGoalsDocRef.get();
+    
+    if (dailyGoals.exists) {
+        const dailyGoalsData =  JSON.stringify(dailyGoals.data());
+        return dailyGoalsData;
+    }
+
+    return null;
+}
 
 const getDateRegistered = async (userDocSnapshot: any) => {
 
@@ -77,32 +108,6 @@ const formatDateRegistered = (date: any) => {
         const year = date.getFullYear();
         return `${day}/${month}/${year}`;
     }
-    return null;
-}
-
-const getDailyGoals = async (userInfoCollectionRef: any) => {
-
-    const dailyGoalsDocRef = userInfoCollectionRef.doc("nutrients");
-    const dailyGoals = await dailyGoalsDocRef.get();
-    
-    if (dailyGoals.exists()) {
-        const dailyGoalsData =  JSON.stringify(dailyGoals.data());
-        return dailyGoalsData;
-    }
-
-    return null;
-}
-
-const getUsername = async (userInfoCollectionRef: any) => {
-
-    const usernameDocRef = userInfoCollectionRef.doc("username");
-    const username = await usernameDocRef.get();
-
-    if (username.exists()) {
-        const usernameData = username.data()?.username;
-        return usernameData;
-    }
-
     return null;
 }
 
